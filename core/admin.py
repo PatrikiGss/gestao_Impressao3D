@@ -12,7 +12,7 @@ class ModelsAdmin(admin.ModelAdmin):
         'qual_impressora',
         'Tipo_filamento',
         'tipo_preenchimento',
-        'resolução',
+        'resolucao',
         'porcentagem_preenchimento',
         'arq_upload',
         'arq_link',

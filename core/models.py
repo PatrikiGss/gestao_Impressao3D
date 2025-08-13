@@ -19,6 +19,11 @@ class Tipo_filamento(models.TextChoices):
     ABS="ABS","abs"
     PETG="PETG","petg"
 
+class Resolucao(models.TextChoices):
+    BAIXO="BAIXO","baixo",
+    MEDIO="MEDIO","medio",
+    ALTO="ALTO","alto"
+
 class Models(models.Model):
     nome = models.CharField(max_length=50)
     curso = models.CharField(
@@ -33,8 +38,14 @@ class Models(models.Model):
     arq_link=models.URLField(blank=True,null=True)
     #abaixo os campos apenas para quem possui conhecimento tecnico
     tipo_preenchimento=models.CharField(max_length=50, blank=True, null=True)
-    resolução=models.IntegerField(blank=True, null=True)
     porcentagem_preenchimento=models.IntegerField(blank=True, null=True)
+    resolucao = models.CharField(
+    max_length=20,
+    choices=Resolucao.choices,
+    default=Resolucao.BAIXO,
+    blank=True,
+    null=True
+    )
     qual_impressora = models.CharField(
         max_length=20,
         choices=ImpressorasChoice.choices,

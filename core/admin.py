@@ -9,21 +9,13 @@ class ModelsAdmin(admin.ModelAdmin):
         'quant_de_pecas',
         'cor',
         'telefone',
-        'qual_impressora',
-        'Tipo_filamento',
-        'tipo_preenchimento',
-        'resolucao',
-        'porcentagem_preenchimento',
-        'arq_upload',
-        'arq_link',
+        'tipo_filamento',  # <- nome correto
     )
+
     list_filter = (
         'curso',
+        'tipo_filamento',  # <- nome correto
         'qual_impressora',
-        'Tipo_filamento',
-        'cor'
     )
-    search_fields = (
-        'nome',
-        'telefone'
-    )
+
+    search_fields = ('nome', 'telefone')

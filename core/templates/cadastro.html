@@ -1,0 +1,34 @@
+<h1>Cadastro - Informações</h1>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {{ form.nome.label }}: {{ form.nome }} <br>
+    {{ form.curso.label }}: {{ form.curso }} <br>
+    {{ form.quant_de_pecas.label }}: {{ form.quant_de_pecas }} <br>
+    {{ form.cor.label }}: {{ form.cor }} <br>
+    {{ form.telefone.label }}: {{ form.telefone }} <br>
+    {{ form.arq_upload.label }}: {{ form.arq_upload }} <br>
+    {{ form.arq_link.label }}: {{ form.arq_link }} <br>
+
+    <p>Possui conhecimento técnico?</p>
+    <label><input type="radio" name="conhecimento" value="nao" checked onclick="toggleCampos(false)"> Não</label><br>
+    <label><input type="radio" name="conhecimento" value="sim" onclick="toggleCampos(true)"> Sim</label><br><br>
+
+    <div id="campos-tecnicos" style="display:none;">
+        {{ form.tipo_preenchimento.label }}: {{ form.tipo_preenchimento }} <br>
+        {{ form.porcentagem_preenchimento.label }}: {{ form.porcentagem_preenchimento }} <br>
+        {{ form.resolucao.label }}: {{ form.resolucao }} <br>
+        {{ form.qual_impressora.label }}: {{ form.qual_impressora }} <br>
+        {{ form.tipo_filamento.label }}: {{ form.tipo_filamento }} <br>
+    </div>
+
+    <br>
+    <button type="submit">Enviar</button>
+</form>
+
+<script>
+function toggleCampos(mostrar) {
+    document.getElementById("campos-tecnicos").style.display = mostrar ? "block" : "none";
+}
+</script>

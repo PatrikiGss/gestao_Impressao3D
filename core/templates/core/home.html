@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impressora 3D - Home</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* MENU SUPERIOR */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            color: white;
+            padding: 10px 15px;
+        }
+
+        /* Botões do topo */
+        .menu-left, .menu-right {
+            position: relative;
+        }
+
+        .menu-button {
+            background: #444;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .menu-button:hover {
+            background: #555;
+        }
+
+        /* Dropdowns */
+        .dropdown {
+            display: none;
+            position: absolute;
+            background: #444;
+            min-width: 140px;
+            z-index: 10;
+        }
+
+        .dropdown a {
+            display: block;
+            padding: 8px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .dropdown a:hover {
+            background: #555;
+        }
+
+        /* MOSTRAR DROPDOWN NO HOVER */
+        .menu-left:hover .dropdown,
+        .menu-right:hover .dropdown {
+            display: block;
+        }
+
+        /* CONTEÚDO DA HOME */
+        .content {
+            padding: 50px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOPO -->
+    <div class="topbar">
+
+        <!-- LADO ESQUERDO (login / cadastro) -->
+        <div class="menu-left">
+            <button class="menu-button">entrar como admin</button>
+            <div class="dropdown">
+                <a href="#">Login</a>
+            </div>
+        </div>
+
+        <!-- LADO DIREITO (navegação do sistema) -->
+        <div class="menu-right">
+            <button class="menu-button">Navegar</button>
+            <div class="dropdown">
+                <a href="/">Home</a>
+                <a href="/cadastro/">Cadastro de Impressão</a>
+            <!-- <a href="/lista/">Lista de Impressões</a>-->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <div class="content">
+        <h1>Bem-vindo ao Sistema de Impressão 3D</h1>
+        <p>Selecione uma opção no menu superior para continuar.</p>
+    </div>
+
+</body>
+</html>

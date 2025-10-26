@@ -7,7 +7,7 @@ from django.conf import settings
 import os
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'core/home.html')
 
 
 

@@ -9,12 +9,13 @@ class ModelsAdmin(admin.ModelAdmin):
         'quant_de_pecas',
         'cor',
         'telefone',
-        'tipo_filamento',  # <- nome correto
+        'tipo_filamento',
+        'created_at',
     )
 
     list_filter = (
         'curso',
-        'tipo_filamento',  # <- nome correto
+        'tipo_filamento',
         'qual_impressora',
     )
 

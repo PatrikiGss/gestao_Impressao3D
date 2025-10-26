@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Lista de Cadastros</title>
+</head>
+<body>
+    <h1>Cadastros</h1>
+    <p><a href="{% url 'core:cadastro' %}">Novo cadastro</a></p>
+
+    {% if items %}
+    <table border="1" cellpadding="6" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Curso</th>
+                <th>Telefone</th>
+                <th>Arquivo / Link</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for it in items %}
+            <tr>
+                <td>{{ it.nome }}</td>
+                <td>{{ it.get_curso_display }}</td>
+                <td>{{ it.telefone }}</td>
+                <td>
+                    {% if it.arq_upload %}
+                        {{ it.arq_upload.name|slice:"8:" }} <!-- remove "arquivos/" se quiser -->
+                    {% elif it.arq_link %}
+                        <a href="{{ it.arq_link }}" target="_blank">Link</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if it.arq_upload %}
+                        <a href="{% url 'core:download_arquivo' it.pk %}">Download</a> |
+                    {% endif %}
+                    <a href="{% url 'core:excluir' it.pk %}">Excluir</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>Nenhum cadastro ainda.</p>
+    {% endif %}
+</body>
+</html>

@@ -1,5 +1,8 @@
+import os
 from django import forms
 from .models import Models
+
+EXTENSOES_PERMITIDAS = {".stl", ".obj", ".3mf", ".gcode"}
 
 class ModelsForm(forms.ModelForm):
     class Meta:
@@ -15,3 +18,15 @@ class ModelsForm(forms.ModelForm):
             raise forms.ValidationError("Envie um arquivo ou informe um link — pelo menos um é obrigatório.")
 
         return cleaned_data
+
+    def clean_arq_upload(self):
+        arquivo = self.cleaned_data.get('arq_upload')
+
+        if arquivo:
+            nome = arquivo.name
+            extensao = os.path.splitext(nome)[1].lower()
+            if extensao not in EXTENSOES_PERMITIDAS:
+                raise forms.ValidationError(
+                    "Formato inválido! Envie um arquivo 3D (.stl, .obj, .3mf ou .gcode)."
+                )
+        return arquivo

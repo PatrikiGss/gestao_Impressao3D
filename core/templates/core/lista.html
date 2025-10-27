@@ -12,16 +12,19 @@
     <table border="1" cellpadding="6" cellspacing="0">
         <thead>
             <tr>
+                <th>ID</th>
                 <th>Nome</th>
                 <th>Curso</th>
                 <th>Telefone</th>
                 <th>Arquivo / Link</th>
+                <th>Data</th>
                 <th>Ações</th>
             </tr>
         </thead>
         <tbody>
         {% for it in items %}
             <tr>
+                <td>{{ it.id }}</td>
                 <td>{{ it.nome }}</td>
                 <td>{{ it.get_curso_display }}</td>
                 <td>{{ it.telefone }}</td>
@@ -34,6 +37,7 @@
                         -
                     {% endif %}
                 </td>
+                <td>{{ it.data_envio }}</td>
                 <td>
                     {% if it.arq_upload %}
                         <a href="{% url 'core:download_arquivo' it.pk %}">Download</a> |

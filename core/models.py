@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class CursoChoices(models.TextChoices):
     CIENCIA_DA_COMPUTACAO = "CC", "Ciência da Computação"
@@ -33,6 +34,7 @@ class Models(models.Model):
     # arquivos
     arq_upload = models.FileField(upload_to="arquivos/", blank=True, null=True)
     arq_link = models.URLField(blank=True, null=True)
+    data_envio = models.DateTimeField(default=timezone.now)
 
     # campos técnicos (opcionais)
     tipo_preenchimento = models.CharField(max_length=50, blank=True, null=True)

@@ -5,6 +5,7 @@ from .models import Models
 from django.http import HttpResponse, Http404
 from django.conf import settings
 import os
+from django.contrib.auth.decorators import login_required
 
 def home(request):
     return render(request, 'core/home.html')
@@ -26,6 +27,7 @@ def cadastro(request):
 def sucesso(request):
     return render(request, 'core/sucesso.html')
 
+@login_required
 def lista_models(request):
     items = Models.objects.order_by('-created_at')
     return render(request, 'core/lista.html', {'items': items})

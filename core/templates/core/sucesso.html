@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <title>Sucesso</title>
-</head>
-<body>
+{% extends 'core/base.html' %}
+{% block title %}Sucesso - Cadastro{% endblock %}
+
+{% block content %}
     <h2>Cadastro concluído com sucesso!</h2>
     <p><a href="{% url 'core:cadastro' %}">Criar outro</a> | <a href="{% url 'core:lista_models' %}">Ver lista</a></p>
-</body>
-</html>
+{% endblock %}

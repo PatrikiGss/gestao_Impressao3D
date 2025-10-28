@@ -1,15 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <title>Lista de Cadastros</title>
-</head>
-<body>
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Lista de Cadastros{% endblock %}
+
+{% block content %}
     <h1>Cadastros</h1>
     <p><a href="{% url 'core:cadastro' %}">Novo cadastro</a></p>
 
     {% if items %}
-    <table border="1" cellpadding="6" cellspacing="0">
+    <table>
         <thead>
             <tr>
                 <th>ID</th>
@@ -30,15 +28,15 @@
                 <td>{{ it.telefone }}</td>
                 <td>
                     {% if it.arq_upload %}
-                        {{ it.arq_upload.name|slice:"8:" }} <!-- remove "arquivos/" se quiser -->
+                        {{ it.arq_upload.name|slice:"8:" }}
                     {% elif it.arq_link %}
                         <a href="{{ it.arq_link }}" target="_blank">Link</a>
                     {% else %}
                         -
                     {% endif %}
                 </td>
-                <td>{{ it.data_envio }}</td>
-                <td>
+                <td>{{ it.data_envio|date:"d/m/Y H:i" }}</td>
+                <td class="table-actions">
                     {% if it.arq_upload %}
                         <a href="{% url 'core:download_arquivo' it.pk %}">Download</a> |
                     {% endif %}
@@ -51,5 +49,4 @@
     {% else %}
         <p>Nenhum cadastro ainda.</p>
     {% endif %}
-</body>
-</html>
+{% endblock %}

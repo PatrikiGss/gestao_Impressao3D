@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="utf-8" />
-    <title>Login - Sistema Impressora 3D</title>
-</head>
-<body>
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Login - Impressora 3D{% endblock %}
+
+{% block content %}
     <h1>Login</h1>
 
     {% if form.non_field_errors %}
@@ -16,7 +14,7 @@
     <form method="post">
         {% csrf_token %}
         <p>
-            <label for="{{ form.username.id_for_label }}">Email / Username:</label><br>
+            <label for="{{ form.username.id_for_label }}">Username:</label><br>
             {{ form.username }}
             {% for err in form.username.errors %}<div style="color:red">{{ err }}</div>{% endfor %}
         </p>
@@ -29,7 +27,4 @@
 
         <button type="submit">Entrar</button>
     </form>
-
-    <p><a href="{% url 'core:home' %}">Voltar para Home</a></p>
-</body>
-</html>
+{% endblock %}

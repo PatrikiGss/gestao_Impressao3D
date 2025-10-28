@@ -1,60 +1,10 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impressora 3D - Home</title>
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; background: #333; color: white; padding: 10px 15px; }
-        .menu-left, .menu-right { position: relative; }
-        .menu-button { background: #444; color: white; padding: 8px 12px; border: none; cursor: pointer; }
-        .menu-button:hover { background: #555; }
-        .dropdown { display: none; position: absolute; background: #444; min-width: 160px; z-index: 10; }
-        .dropdown a { display: block; padding: 8px; text-decoration: none; color: white; }
-        .dropdown a:hover { background: #555; }
-        .menu-left:hover .dropdown, .menu-right:hover .dropdown { display: block; }
-        .content { padding: 50px; text-align: center; }
-    </style>
-</head>
-<body>
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Home - Impressora 3D{% endblock %}
 
-    <div class="topbar">
-
-        <!-- LADO ESQUERDO (login / cadastro) -->
-        <div class="menu-left">
-            {% if user.is_authenticated %}
-                <button class="menu-button">Olá, {{ user.get_username }}</button>
-                <div class="dropdown">
-                    <a href="{% url 'autenticacao:logout' %}">Sair</a>
-                </div>
-            {% else %}
-                <button class="menu-button">entrar como admin</button>
-                <div class="dropdown">
-                    <a href="{% url 'autenticacao:login' %}">Login</a>
-                    <!-- cadastro público não existe -->
-                </div>
-            {% endif %}
-        </div>
-
-        <!-- LADO DIREITO (navegação do sistema) -->
-        <div class="menu-right">
-            <button class="menu-button">Navegar</button>
-            <div class="dropdown">
-                <a href="{% url 'core:home' %}">Home</a>
-                <a href="{% url 'core:cadastro' %}">Cadastro de Impressão</a>
-                {% if user.is_authenticated %}
-                    <a href="{% url 'core:lista_models' %}">Lista de Impressões</a>
-                {% endif %}
-            </div>
-        </div>
-
-    </div>
-
-    <div class="content">
+{% block content %}
+    <div class="content-center">
         <h1>Bem-vindo ao Sistema de Impressão 3D</h1>
         <p>Selecione uma opção no menu superior para continuar.</p>
     </div>
-
-</body>
-</html>
+{% endblock %}

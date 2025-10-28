@@ -7,7 +7,7 @@ EXTENSOES_PERMITIDAS = {".stl", ".obj", ".3mf", ".gcode"}
 class ModelsForm(forms.ModelForm):
     class Meta:
         model = Models
-        fields = "__all__"
+        exclude = ['data_envio']  # não aparece no formulário
 
     def clean(self):
         cleaned_data = super().clean()

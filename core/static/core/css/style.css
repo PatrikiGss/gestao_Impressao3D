@@ -1,5 +1,13 @@
 body {
-    background-color: #f8f9fa;
+    background-color: whitesmoke;
+    min-height: 100vh; /* garante que o fundo ocupe toda a altura da tela */
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+}
+
+.main-content {
+    flex: 1;
 }
 
 footer {

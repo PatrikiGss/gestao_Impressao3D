@@ -1,0 +1,28 @@
+.lista-box {
+    max-width: 1000px;
+    margin: 3rem auto;
+    padding: 2rem;
+    background-color: whitesmoke;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.lista-box h1 {
+    color: #343a40;
+    font-weight: 700;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.table a.btn {
+    margin: 0 2px;
+}
+
+/* Botões com cores suaves e tamanho uniforme */
+.btn-lista {
+    min-width: 100px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.9rem;
+}

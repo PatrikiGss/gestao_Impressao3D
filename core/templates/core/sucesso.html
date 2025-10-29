@@ -1,7 +1,17 @@
 {% extends 'core/base.html' %}
+{% load static %}
 {% block title %}Sucesso - Cadastro{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/sucesso.css' %}">
+{% endblock %}
+
 {% block content %}
+<div class="sucesso-box text-center">
     <h2>Cadastro concluído com sucesso!</h2>
-    <p><a href="{% url 'core:cadastro' %}">Criar outro</a> | <a href="{% url 'core:lista_models' %}">Ver lista</a></p>
+    <div class="mt-4">
+        <a href="{% url 'core:cadastro' %}" class="btn btn-outline-secondary btn-sucesso">Criar outro</a>
+        <a href="{% url 'core:lista_models' %}" class="btn btn-outline-primary btn-sucesso">Ver lista</a>
+    </div>
+</div>
 {% endblock %}

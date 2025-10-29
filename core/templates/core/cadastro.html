@@ -2,96 +2,132 @@
 {% load static %}
 {% block title %}Cadastro - Impressora 3D{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/cadastro.css' %}">
+{% endblock %}
+
 {% block content %}
-    <h1>Cadastro - Informações</h1>
+<div class="container cadastro-box mt-5 mb-5 p-4">
+    <h2 class="text-center mb-4">Cadastro - Informações</h2>
 
     {% if form.non_field_errors %}
-    <div class="error" style="color:red">{{ form.non_field_errors }}</div>
-    {% endif %}
-
-    {% if form.errors %}
-    <div style="color:red">
-        <ul>
-        {% for field, errors in form.errors.items %}
-            <li><strong>{{ field }}:</strong>
-                <ul>
-                {% for err in errors %}
-                    <li>{{ err }}</li>
-                {% endfor %}
-                </ul>
-            </li>
-        {% endfor %}
-        </ul>
-    </div>
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
     {% endif %}
 
     <form method="post" enctype="multipart/form-data" id="form-cadastro">
         {% csrf_token %}
 
-        <label for="{{ form.nome.id_for_label }}">Nome:</label>
-        {{ form.nome }}
-
-        <label for="{{ form.curso.id_for_label }}">Curso:</label>
-        {{ form.curso }}
-
-        <label for="{{ form.quant_de_pecas.id_for_label }}">Quantidade de peças:</label>
-        {{ form.quant_de_pecas }}
-
-        <label for="{{ form.cor.id_for_label }}">Cor:</label>
-        {{ form.cor }}
-
-        <label for="{{ form.telefone.id_for_label }}">Telefone:</label>
-        {{ form.telefone }}
-
-        <label for="{{ form.arq_upload.id_for_label }}">Arquivo (.stl, .obj, .3mf, .gcode):</label>
-        {{ form.arq_upload }}
-
-        <label for="{{ form.arq_link.id_for_label }}">Link do arquivo (opcional):</label>
-        {{ form.arq_link }}
-
-        <p>Possui conhecimento técnico?</p>
-        <label><input type="radio" name="conhecimento" value="nao" checked onclick="toggleCampos(false)"> Não</label>
-        <label><input type="radio" name="conhecimento" value="sim" onclick="toggleCampos(true)"> Sim</label>
-
-        <div id="campos-tecnicos" style="display:none; margin-top:10px;">
-            <h3>Campos técnicos (opcionais)</h3>
-
-            <label for="{{ form.tipo_preenchimento.id_for_label }}">Tipo de preenchimento:</label>
-            {{ form.tipo_preenchimento }}
-
-            <label for="{{ form.porcentagem_preenchimento.id_for_label }}">Porcentagem de preenchimento:</label>
-            {{ form.porcentagem_preenchimento }}
-
-            <label for="{{ form.resolucao.id_for_label }}">Resolução:</label>
-            {{ form.resolucao }}
-
-            <label for="{{ form.qual_impressora.id_for_label }}">Qual impressora:</label>
-            {{ form.qual_impressora }}
-
-            <label for="{{ form.tipo_filamento.id_for_label }}">Tipo de filamento:</label>
-            {{ form.tipo_filamento }}
+        <!-- Nome -->
+        <div class="mb-3 row">
+            <label for="{{ form.nome.id_for_label }}" class="col-sm-3 col-form-label">Nome:</label>
+            <div class="col-sm-9">
+                {{ form.nome }}
+            </div>
         </div>
 
-        <button type="submit">Enviar</button>
+        <!-- Curso -->
+        <div class="mb-3 row">
+            <label for="{{ form.curso.id_for_label }}" class="col-sm-3 col-form-label">Curso:</label>
+            <div class="col-sm-9">
+                {{ form.curso }}
+            </div>
+        </div>
+
+        <!-- Quantidade de peças -->
+        <div class="mb-3 row">
+            <label for="{{ form.quant_de_pecas.id_for_label }}" class="col-sm-3 col-form-label">Quantidade de peças:</label>
+            <div class="col-sm-9">
+                {{ form.quant_de_pecas }}
+            </div>
+        </div>
+
+        <!-- Cor -->
+        <div class="mb-3 row">
+            <label for="{{ form.cor.id_for_label }}" class="col-sm-3 col-form-label">Cor:</label>
+            <div class="col-sm-9">
+                {{ form.cor }}
+            </div>
+        </div>
+
+        <!-- Telefone -->
+        <div class="mb-3 row">
+            <label for="{{ form.telefone.id_for_label }}" class="col-sm-3 col-form-label">Telefone:</label>
+            <div class="col-sm-9">
+                {{ form.telefone }}
+            </div>
+        </div>
+
+        <!-- Upload de arquivo -->
+        <div class="mb-3 row">
+            <label for="{{ form.arq_upload.id_for_label }}" class="col-sm-3 col-form-label">Arquivo (.stl, .obj, .3mf, .gcode):</label>
+            <div class="col-sm-9">
+                {{ form.arq_upload }}
+            </div>
+        </div>
+
+        <!-- Link opcional -->
+        <div class="mb-3 row">
+            <label for="{{ form.arq_link.id_for_label }}" class="col-sm-3 col-form-label">Link do arquivo (opcional):</label>
+            <div class="col-sm-9">
+                {{ form.arq_link }}
+            </div>
+        </div>
+
+        <!-- Conhecimento técnico -->
+        <fieldset class="mb-3 row">
+            <legend class="col-form-label col-sm-3 pt-0">Possui conhecimento técnico?</legend>
+            <div class="col-sm-9">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="conhecimento" value="nao" checked onclick="toggleCampos(false)">
+                    <label class="form-check-label">Não</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="conhecimento" value="sim" onclick="toggleCampos(true)">
+                    <label class="form-check-label">Sim</label>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- Campos técnicos opcionais -->
+        <div id="campos-tecnicos" class="mt-3 p-3 bg-light rounded" style="display:none;">
+            <h5>Campos técnicos (opcionais)</h5>
+
+            <div class="mb-3 row">
+                <label for="{{ form.tipo_preenchimento.id_for_label }}" class="col-sm-4 col-form-label">Tipo de preenchimento:</label>
+                <div class="col-sm-8">{{ form.tipo_preenchimento }}</div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="{{ form.porcentagem_preenchimento.id_for_label }}" class="col-sm-4 col-form-label">Porcentagem de preenchimento:</label>
+                <div class="col-sm-8">{{ form.porcentagem_preenchimento }}</div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="{{ form.resolucao.id_for_label }}" class="col-sm-4 col-form-label">Resolução:</label>
+                <div class="col-sm-8">{{ form.resolucao }}</div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="{{ form.qual_impressora.id_for_label }}" class="col-sm-4 col-form-label">Qual impressora:</label>
+                <div class="col-sm-8">{{ form.qual_impressora }}</div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="{{ form.tipo_filamento.id_for_label }}" class="col-sm-4 col-form-label">Tipo de filamento:</label>
+                <div class="col-sm-8">{{ form.tipo_filamento }}</div>
+            </div>
+        </div>
+
+<!-- Botão de envio -->
+<div class="text-center mt-4">
+    <button type="submit" class="btn btn-secondary btn-lg">Enviar</button>
+</div>
     </form>
+</div>
 
-    <script>
-    function toggleCampos(mostrar) {
-        document.getElementById('campos-tecnicos').style.display = mostrar ? 'block' : 'none';
-    }
+{% endblock %}
 
-    document.getElementById('form-cadastro').addEventListener('submit', function(e){
-        const fileInput = document.querySelector('input[type="file"][name="arq_upload"]');
-        if (fileInput && fileInput.files.length > 0) {
-            const allowed = ['.stl', '.obj', '.3mf', '.gcode'];
-            const name = fileInput.files[0].name.toLowerCase();
-            const ext = name.substring(name.lastIndexOf('.'));
-            if (!allowed.includes(ext)) {
-                e.preventDefault();
-                alert('Formato inválido! Envie um arquivo 3D (.stl, .obj, .3mf ou .gcode).');
-                return false;
-            }
-        }
-    });
-    </script>
+
+{% block extra_js %}
+<script src="{% static 'core/js/cadastro.js' %}"></script>
 {% endblock %}

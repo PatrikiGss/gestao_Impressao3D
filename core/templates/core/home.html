@@ -2,9 +2,14 @@
 {% load static %}
 {% block title %}Home - Impressora 3D{% endblock %}
 
+{% block extra_css %}
+    <!-- Seu CSS adicional -->
+    <link rel="stylesheet" href="{% static 'core/css/home.css' %}">
+{% endblock %}
+
 {% block content %}
-    <div class="content-center">
-        <h1>Bem-vindo ao Sistema de Impressão 3D</h1>
-        <p>Selecione uma opção no menu superior para continuar.</p>
-    </div>
+<div class="home-box">
+    <h1>Bem-vindo ao Sistema de Impressão 3D</h1>
+    <p>Selecione uma opção no menu superior para continuar.</p>
+</div>
 {% endblock %}

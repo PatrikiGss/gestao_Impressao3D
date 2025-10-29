@@ -2,29 +2,46 @@
 {% load static %}
 {% block title %}Login - Impressora 3D{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'autenticacao/css/login.css' %}">
+{% endblock %}
+
 {% block content %}
-    <h1>Login</h1>
+<div class="login-box">
+    <h2 class="mb-4">Login</h2>
 
     {% if form.non_field_errors %}
-    <div style="color: red;">
+    <div class="text-danger mb-3">
         {{ form.non_field_errors }}
     </div>
     {% endif %}
 
     <form method="post">
         {% csrf_token %}
-        <p>
-            <label for="{{ form.username.id_for_label }}">Username:</label><br>
-            {{ form.username }}
-            {% for err in form.username.errors %}<div style="color:red">{{ err }}</div>{% endfor %}
-        </p>
 
-        <p>
-            <label for="{{ form.password.id_for_label }}">Senha:</label><br>
-            {{ form.password }}
-            {% for err in form.password.errors %}<div style="color:red">{{ err }}</div>{% endfor %}
-        </p>
+        <div class="form-group mb-3 row">
+            <label for="{{ form.username.id_for_label }}" class="col-sm-4 col-form-label text-end">Username:</label>
+            <div class="col-sm-8">
+                {{ form.username }}
+                {% for err in form.username.errors %}
+                    <div class="text-danger small">{{ err }}</div>
+                {% endfor %}
+            </div>
+        </div>
 
-        <button type="submit">Entrar</button>
+        <div class="form-group mb-3 row">
+            <label for="{{ form.password.id_for_label }}" class="col-sm-4 col-form-label text-end">Senha:</label>
+            <div class="col-sm-8">
+                {{ form.password }}
+                {% for err in form.password.errors %}
+                    <div class="text-danger small">{{ err }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-outline-secondary btn-login">Entrar</button>
+        </div>
     </form>
+</div>
 {% endblock %}

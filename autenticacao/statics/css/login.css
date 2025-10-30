@@ -1,38 +1,29 @@
-.login-box {
-    max-width: 450px;
-    margin: 6rem auto;
-    padding: 2.5rem 2rem;
-    background-color: whitesmoke; /* caixa com fundo */
-    border-radius: 20px;          /* bordas arredondadas */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* sombra suave */
-    text-align: left;
+body {
+    background-color: #e9ecef; /* fundo suave */
 }
 
-.login-box h2 {
-    color: #343a40;
-    font-weight: 700;
-    text-align: center;
+/* Ajuste fino para altura e espaçamento */
+.container {
+    margin-top: 40px; /* aproxima mais do topo */
 }
 
-.login-box input {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border-radius: 5px;
-    border: 1px solid #ced4da;
-}
-
-.btn-login {
-    min-width: 140px;
-    padding: 0.5rem 1.2rem;
-    font-size: 1rem;
-    color: #495057;
-    background-color: transparent;
-    border: 1px solid #adb5bd;
-    border-radius: 8px;
-    transition: all 0.2s ease-in-out;
-}
-
-.btn-login:hover {
-    background-color: #e9ecef;
+/* Efeito suave nos inputs */
+.form-control:focus {
     border-color: #6c757d;
+    box-shadow: 0 0 0 0.15rem rgba(108,117,125,0.25);
+}
+
+/* Botão com aparência transparente e efeito hover */
+.btn-outline-secondary {
+    background-color: transparent;
+    color: #495057;
+    border: 1px solid #adb5bd;
+    transition: all 0.25s ease-in-out;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+    border-color: #6c757d;
+    transform: translateY(-1px);
 }

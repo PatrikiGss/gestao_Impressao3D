@@ -1,7 +1,20 @@
 function toggleCampos(mostrar) {
-    document.getElementById('campos-tecnicos').style.display = mostrar ? 'block' : 'none';
+    const campos = document.getElementById('campos-tecnicos');
+    const btnSim = document.getElementById('btnSim');
+    const btnNao = document.getElementById('btnNao');
+
+    if (mostrar) {
+        campos.style.display = 'block';
+        btnSim.classList.add('active');
+        btnNao.classList.remove('active');
+    } else {
+        campos.style.display = 'none';
+        btnNao.classList.add('active');
+        btnSim.classList.remove('active');
+    }
 }
 
+// Validação de arquivo (mantida)
 document.getElementById('form-cadastro').addEventListener('submit', function(e){
     const fileInput = document.querySelector('input[type="file"][name="arq_upload"]');
     if (fileInput && fileInput.files.length > 0) {
@@ -11,7 +24,6 @@ document.getElementById('form-cadastro').addEventListener('submit', function(e){
         if (!allowed.includes(ext)) {
             e.preventDefault();
             alert('Formato inválido! Envie um arquivo 3D (.stl, .obj, .3mf ou .gcode).');
-            return false;
         }
     }
 });

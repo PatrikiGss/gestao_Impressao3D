@@ -1,5 +1,6 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 {% block title %}Login - Impressora 3D{% endblock %}
 
 {% block extra_css %}
@@ -7,41 +8,39 @@
 {% endblock %}
 
 {% block content %}
-<div class="login-box">
-    <h2 class="mb-4">Login</h2>
+<div class="container d-flex justify-content-center align-items-start" style="min-height: 85vh; padding-top: 60px;">
+    <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 420px; width: 100%; background-color: #f8f9fa;">
+        <div class="card-body">
+            <h3 class="text-center mb-4 fw-bold">Login</h3>
 
-    {% if form.non_field_errors %}
-    <div class="text-danger mb-3">
-        {{ form.non_field_errors }}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2 text-center">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">Usuário</label>
+                    {{ form.username|add_class:"form-control" }}
+                    {% for err in form.username.errors %}
+                        <div class="text-danger small mt-1">{{ err }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.password.id_for_label }}" class="form-label">Senha</label>
+                    {{ form.password|add_class:"form-control" }}
+                    {% for err in form.password.errors %}
+                        <div class="text-danger small mt-1">{{ err }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-outline-secondary btn-lg fw-semibold">Entrar</button>
+                </div>
+            </form>
+        </div>
     </div>
-    {% endif %}
-
-    <form method="post">
-        {% csrf_token %}
-
-        <div class="form-group mb-3 row">
-            <label for="{{ form.username.id_for_label }}" class="col-sm-4 col-form-label text-end">Username:</label>
-            <div class="col-sm-8">
-                {{ form.username }}
-                {% for err in form.username.errors %}
-                    <div class="text-danger small">{{ err }}</div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="form-group mb-3 row">
-            <label for="{{ form.password.id_for_label }}" class="col-sm-4 col-form-label text-end">Senha:</label>
-            <div class="col-sm-8">
-                {{ form.password }}
-                {% for err in form.password.errors %}
-                    <div class="text-danger small">{{ err }}</div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="text-center mt-4">
-            <button type="submit" class="btn btn-outline-secondary btn-login">Entrar</button>
-        </div>
-    </form>
 </div>
 {% endblock %}

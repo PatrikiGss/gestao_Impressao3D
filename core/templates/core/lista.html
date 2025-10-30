@@ -8,9 +8,8 @@
 
 {% block content %}
 <div class="lista-box">
-    <h1 class="mb-3">Cadastros</h1>
-
-    <div class="mb-4 text-center">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Cadastros</h1>
         <a href="{% url 'core:cadastro' %}" class="btn btn-outline-secondary btn-lista">Novo cadastro</a>
     </div>
 
@@ -50,6 +49,19 @@
                         <a href="{% url 'core:download_arquivo' it.pk %}" class="btn btn-outline-primary btn-lista">Download</a>
                         {% endif %}
                         <a href="{% url 'core:excluir' it.pk %}" class="btn btn-outline-danger btn-lista">Excluir</a>
+                        <button class="btn btn-outline-secondary btn-lista" type="button"
+                                onclick="toggleDetalhes({{ it.id }})">
+                            Detalhes
+                        </button>
+                    </td>
+                </tr>
+                <tr id="detalhes-{{ it.id }}" class="detalhes-row" style="display:none;">
+                    <td colspan="7" class="text-start bg-light">
+                        <strong>Tipo de preenchimento:</strong> {{ it.tipo_preenchimento|default:"-" }}<br>
+                        <strong>Porcentagem de preenchimento:</strong> {{ it.porcentagem_preenchimento|default:"-" }}<br>
+                        <strong>Resolução:</strong> {{ it.resolucao|default:"-" }}<br>
+                        <strong>Impressora:</strong> {{ it.qual_impressora|default:"-" }}<br>
+                        <strong>Filamento:</strong> {{ it.tipo_filamento|default:"-" }}
                     </td>
                 </tr>
             {% endfor %}
@@ -60,4 +72,15 @@
         <p class="text-center">Nenhum cadastro ainda.</p>
     {% endif %}
 </div>
+
+<script>
+function toggleDetalhes(id) {
+    const row = document.getElementById(`detalhes-${id}`);
+    if (row.style.display === 'none' || row.style.display === '') {
+        row.style.display = 'table-row';
+    } else {
+        row.style.display = 'none';
+    }
+}
+</script>
 {% endblock %}

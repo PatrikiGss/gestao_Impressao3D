@@ -11,122 +11,100 @@
     <h2 class="text-center mb-4">Cadastro - Informações</h2>
 
     {% if form.non_field_errors %}
-        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        <div class="alert alert-danger text-center">{{ form.non_field_errors }}</div>
     {% endif %}
 
-    <form method="post" enctype="multipart/form-data" id="form-cadastro">
+    <form method="post" enctype="multipart/form-data" id="form-cadastro" novalidate>
         {% csrf_token %}
 
         <!-- Nome -->
         <div class="mb-3 row">
-            <label for="{{ form.nome.id_for_label }}" class="col-sm-3 col-form-label">Nome:</label>
-            <div class="col-sm-9">
-                {{ form.nome }}
-            </div>
+            <label class="col-sm-3 col-form-label">Nome:</label>
+            <div class="col-sm-9">{{ form.nome }}</div>
         </div>
 
         <!-- Curso -->
         <div class="mb-3 row">
-            <label for="{{ form.curso.id_for_label }}" class="col-sm-3 col-form-label">Curso:</label>
-            <div class="col-sm-9">
-                {{ form.curso }}
-            </div>
+            <label class="col-sm-3 col-form-label">Curso:</label>
+            <div class="col-sm-9">{{ form.curso }}</div>
         </div>
 
         <!-- Quantidade de peças -->
         <div class="mb-3 row">
-            <label for="{{ form.quant_de_pecas.id_for_label }}" class="col-sm-3 col-form-label">Quantidade de peças:</label>
-            <div class="col-sm-9">
-                {{ form.quant_de_pecas }}
-            </div>
+            <label class="col-sm-3 col-form-label">Quantidade de peças:</label>
+            <div class="col-sm-9">{{ form.quant_de_pecas }}</div>
         </div>
 
         <!-- Cor -->
         <div class="mb-3 row">
-            <label for="{{ form.cor.id_for_label }}" class="col-sm-3 col-form-label">Cor:</label>
-            <div class="col-sm-9">
-                {{ form.cor }}
-            </div>
+            <label class="col-sm-3 col-form-label">Cor:</label>
+            <div class="col-sm-9">{{ form.cor }}</div>
         </div>
 
         <!-- Telefone -->
         <div class="mb-3 row">
-            <label for="{{ form.telefone.id_for_label }}" class="col-sm-3 col-form-label">Telefone:</label>
-            <div class="col-sm-9">
-                {{ form.telefone }}
-            </div>
+            <label class="col-sm-3 col-form-label">Telefone:</label>
+            <div class="col-sm-9">{{ form.telefone }}</div>
         </div>
 
-        <!-- Upload de arquivo -->
+        <!-- Upload -->
         <div class="mb-3 row">
-            <label for="{{ form.arq_upload.id_for_label }}" class="col-sm-3 col-form-label">Arquivo (.stl, .obj, .3mf, .gcode):</label>
-            <div class="col-sm-9">
-                {{ form.arq_upload }}
-            </div>
+            <label class="col-sm-3 col-form-label">Arquivo (.stl, .obj, .3mf, .gcode):</label>
+            <div class="col-sm-9">{{ form.arq_upload }}</div>
         </div>
 
-        <!-- Link opcional -->
+        <!-- Link -->
         <div class="mb-3 row">
-            <label for="{{ form.arq_link.id_for_label }}" class="col-sm-3 col-form-label">Link do arquivo (opcional):</label>
-            <div class="col-sm-9">
-                {{ form.arq_link }}
-            </div>
+            <label class="col-sm-3 col-form-label">Link do arquivo (opcional):</label>
+            <div class="col-sm-9">{{ form.arq_link }}</div>
         </div>
 
         <!-- Conhecimento técnico -->
-        <fieldset class="mb-3 row">
+        <fieldset class="mb-4 row">
             <legend class="col-form-label col-sm-3 pt-0">Possui conhecimento técnico?</legend>
             <div class="col-sm-9">
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="conhecimento" value="nao" checked onclick="toggleCampos(false)">
-                    <label class="form-check-label">Não</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="conhecimento" value="sim" onclick="toggleCampos(true)">
-                    <label class="form-check-label">Sim</label>
-                </div>
+                <button type="button" class="btn btn-outline-secondary me-2" id="btnNao" onclick="toggleCampos(false)">Não</button>
+                <button type="button" class="btn btn-outline-secondary" id="btnSim" onclick="toggleCampos(true)">Sim</button>
             </div>
         </fieldset>
 
-        <!-- Campos técnicos opcionais -->
+        <!-- Campos técnicos -->
         <div id="campos-tecnicos" class="mt-3 p-3 bg-light rounded" style="display:none;">
             <h5>Campos técnicos (opcionais)</h5>
 
             <div class="mb-3 row">
-                <label for="{{ form.tipo_preenchimento.id_for_label }}" class="col-sm-4 col-form-label">Tipo de preenchimento:</label>
+                <label class="col-sm-4 col-form-label">Tipo de preenchimento:</label>
                 <div class="col-sm-8">{{ form.tipo_preenchimento }}</div>
             </div>
 
             <div class="mb-3 row">
-                <label for="{{ form.porcentagem_preenchimento.id_for_label }}" class="col-sm-4 col-form-label">Porcentagem de preenchimento:</label>
+                <label class="col-sm-4 col-form-label">Porcentagem de preenchimento:</label>
                 <div class="col-sm-8">{{ form.porcentagem_preenchimento }}</div>
             </div>
 
             <div class="mb-3 row">
-                <label for="{{ form.resolucao.id_for_label }}" class="col-sm-4 col-form-label">Resolução:</label>
+                <label class="col-sm-4 col-form-label">Resolução:</label>
                 <div class="col-sm-8">{{ form.resolucao }}</div>
             </div>
 
             <div class="mb-3 row">
-                <label for="{{ form.qual_impressora.id_for_label }}" class="col-sm-4 col-form-label">Qual impressora:</label>
+                <label class="col-sm-4 col-form-label">Qual impressora:</label>
                 <div class="col-sm-8">{{ form.qual_impressora }}</div>
             </div>
 
             <div class="mb-3 row">
-                <label for="{{ form.tipo_filamento.id_for_label }}" class="col-sm-4 col-form-label">Tipo de filamento:</label>
+                <label class="col-sm-4 col-form-label">Tipo de filamento:</label>
                 <div class="col-sm-8">{{ form.tipo_filamento }}</div>
             </div>
         </div>
 
-<!-- Botão de envio -->
-<div class="text-center mt-4">
-    <button type="submit" class="btn btn-secondary btn-lg">Enviar</button>
-</div>
+        <!-- Botão de envio -->
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-outline-secondary btn-lg">Enviar</button>
+        </div>
     </form>
 </div>
-
 {% endblock %}
-
 
 {% block extra_js %}
 <script src="{% static 'core/js/cadastro.js' %}"></script>

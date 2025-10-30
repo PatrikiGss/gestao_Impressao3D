@@ -1,0 +1,33 @@
+/* ====== Fundo com marca d'água do IFSC ====== */
+body {
+    background-color: whitesmoke;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 80px; /* distância do topo */
+    left: 30px; /* distância da esquerda */
+    width: 250px; /* tamanho do logo */
+    height: 120px;
+    background-image: url("../img/Logo_IFSC.png");
+    background-repeat: no-repeat;
+    background-size: contain; /* mantém proporções do logo */
+    background-position: top left;
+    opacity: 0.90; /* transparência suave */
+    z-index: -1; /* mantém atrás de todo o conteúdo */
+    pointer-events: none; /* não interfere nos cliques */
+}
+
+
+
+
+.main-content {
+    flex: 1;
+}
+
+footer {
+    font-size: 0.9rem;
+}

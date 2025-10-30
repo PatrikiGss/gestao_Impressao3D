@@ -7,9 +7,9 @@ body {
 
 body::before {
     content: "";
-    position: fixed;
+    position: absolute;
     top: 80px; /* distância do topo */
-    left: 30px; /* distância da esquerda */
+    left: 20px; /* distância da esquerda */
     width: 250px; /* tamanho do logo */
     height: 120px;
     background-image: url("../img/Logo_IFSC.png");

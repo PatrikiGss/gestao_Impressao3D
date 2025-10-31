@@ -1,5 +1,6 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 {% block title %}Cadastro - Impressora 3D{% endblock %}
 
 {% block extra_css %}
@@ -10,59 +11,57 @@
 <div class="container cadastro-box mt-5 mb-5 p-4">
     <h2 class="text-center mb-4">Cadastro - Informações</h2>
 
-    {% if form.non_field_errors %}
-        <div class="alert alert-danger text-center">{{ form.non_field_errors }}</div>
-    {% endif %}
+    <div id="alert-erro" class="alert alert-danger d-none text-center"></div>
 
     <form method="post" enctype="multipart/form-data" id="form-cadastro" novalidate>
         {% csrf_token %}
 
         <!-- Nome -->
-        <div class="mb-3 row">
-            <label class="col-sm-3 col-form-label">Nome:</label>
-            <div class="col-sm-9">{{ form.nome }}</div>
+        <div class="mb-3">
+            <label class="form-label">Nome *</label>
+            {{ form.nome|add_class:"form-control"|attr:"maxlength:50" }}
         </div>
 
         <!-- Curso -->
-        <div class="mb-3 row">
-            <label class="col-sm-3 col-form-label">Curso:</label>
-            <div class="col-sm-9">{{ form.curso }}</div>
+        <div class="mb-3">
+            <label class="form-label">Curso *</label>
+            {{ form.curso|add_class:"form-control" }}
         </div>
 
         <!-- Quantidade de peças -->
-        <div class="mb-3 row">
-            <label class="col-sm-3 col-form-label">Quantidade de peças:</label>
-            <div class="col-sm-9">{{ form.quant_de_pecas }}</div>
+        <div class="mb-3">
+            <label class="form-label">Quantidade de peças *</label>
+            {{ form.quant_de_pecas|add_class:"form-control"|attr:"maxlength:50" }}
         </div>
 
         <!-- Cor -->
-        <div class="mb-3 row">
-            <label class="col-sm-3 col-form-label">Cor:</label>
-            <div class="col-sm-9">{{ form.cor }}</div>
+        <div class="mb-3">
+            <label class="form-label">Cor *</label>
+            {{ form.cor|add_class:"form-control"|attr:"maxlength:20" }}
         </div>
 
         <!-- Telefone -->
-        <div class="mb-3 row">
-            <label class="col-sm-3 col-form-label">Telefone:</label>
-            <div class="col-sm-9">{{ form.telefone }}</div>
+        <div class="mb-3">
+            <label class="form-label">Telefone *</label>
+            {{ form.telefone|add_class:"form-control" }}
         </div>
 
         <!-- Upload -->
-        <div class="mb-3 row">
-            <label class="col-sm-3 col-form-label">Arquivo (.stl, .obj, .3mf, .gcode):</label>
-            <div class="col-sm-9">{{ form.arq_upload }}</div>
+        <div class="mb-3">
+            <label class="form-label">Arquivo (.stl, .obj, .3mf, .gcode):</label>
+            {{ form.arq_upload|add_class:"form-control" }}
         </div>
 
         <!-- Link -->
-        <div class="mb-3 row">
-            <label class="col-sm-3 col-form-label">Link do arquivo (opcional):</label>
-            <div class="col-sm-9">{{ form.arq_link }}</div>
+        <div class="mb-3">
+            <label class="form-label">Link do arquivo (opcional):</label>
+            {{ form.arq_link|add_class:"form-control" }}
         </div>
 
         <!-- Conhecimento técnico -->
-        <fieldset class="mb-4 row">
-            <legend class="col-form-label col-sm-3 pt-0">Possui conhecimento técnico?</legend>
-            <div class="col-sm-9">
+        <fieldset class="mb-4">
+            <legend class="form-label">Possui conhecimento técnico?</legend>
+            <div>
                 <button type="button" class="btn btn-outline-secondary me-2" id="btnNao" onclick="toggleCampos(false)">Não</button>
                 <button type="button" class="btn btn-outline-secondary" id="btnSim" onclick="toggleCampos(true)">Sim</button>
             </div>
@@ -72,29 +71,29 @@
         <div id="campos-tecnicos" class="mt-3 p-3 bg-light rounded" style="display:none;">
             <h5>Campos técnicos (opcionais)</h5>
 
-            <div class="mb-3 row">
-                <label class="col-sm-4 col-form-label">Tipo de preenchimento:</label>
-                <div class="col-sm-8">{{ form.tipo_preenchimento }}</div>
+            <div class="mb-3">
+                <label class="form-label">Tipo de preenchimento:</label>
+                {{ form.tipo_preenchimento|add_class:"form-control"|attr:"maxlength:20" }}
             </div>
 
-            <div class="mb-3 row">
-                <label class="col-sm-4 col-form-label">Porcentagem de preenchimento:</label>
-                <div class="col-sm-8">{{ form.porcentagem_preenchimento }}</div>
+            <div class="mb-3">
+                <label class="form-label">Porcentagem de preenchimento:</label>
+                {{ form.porcentagem_preenchimento|add_class:"form-control"|attr:"max:100" }}
             </div>
 
-            <div class="mb-3 row">
-                <label class="col-sm-4 col-form-label">Resolução:</label>
-                <div class="col-sm-8">{{ form.resolucao }}</div>
+            <div class="mb-3">
+                <label class="form-label">Resolução:</label>
+                {{ form.resolucao|add_class:"form-control" }}
             </div>
 
-            <div class="mb-3 row">
-                <label class="col-sm-4 col-form-label">Qual impressora:</label>
-                <div class="col-sm-8">{{ form.qual_impressora }}</div>
+            <div class="mb-3">
+                <label class="form-label">Qual impressora:</label>
+                {{ form.qual_impressora|add_class:"form-control" }}
             </div>
 
-            <div class="mb-3 row">
-                <label class="col-sm-4 col-form-label">Tipo de filamento:</label>
-                <div class="col-sm-8">{{ form.tipo_filamento }}</div>
+            <div class="mb-3">
+                <label class="form-label">Tipo de filamento:</label>
+                {{ form.tipo_filamento|add_class:"form-control" }}
             </div>
         </div>
 
@@ -107,5 +106,6 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://unpkg.com/imask"></script>
 <script src="{% static 'core/js/cadastro.js' %}"></script>
 {% endblock %}

@@ -1,9 +1,9 @@
 body {
-    background-color: whitesmoke;
+    background-color: #f8f9fa;
 }
 
 .cadastro-box {
-    max-width: 900px;
+    max-width: 700px;
     margin: 3rem auto;
     padding: 2.5rem;
     background-color: #fff;
@@ -17,7 +17,6 @@ body {
     text-align: center;
 }
 
-/* Botões no estilo do login */
 .btn-outline-secondary {
     background-color: transparent;
     color: #495057;
@@ -30,10 +29,8 @@ body {
     background-color: #6c757d;
     color: white;
     border-color: #6c757d;
-    transform: translateY(-1px);
 }
 
-/* Realce dos campos técnicos */
 #campos-tecnicos {
     background-color: #f8f9fa;
     border-radius: 10px;

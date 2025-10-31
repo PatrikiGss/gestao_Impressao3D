@@ -29,7 +29,7 @@ class Models(models.Model):
     curso = models.CharField(max_length=20, choices=CursoChoices.choices)
     quant_de_pecas = models.IntegerField()
     cor = models.CharField(max_length=20)
-    telefone = models.IntegerField()
+    telefone = models.CharField()
 
     # arquivos
     arq_upload = models.FileField(upload_to="arquivos/", blank=True, null=True)

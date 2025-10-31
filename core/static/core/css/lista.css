@@ -12,27 +12,64 @@
     font-weight: 700;
 }
 
-/* Alinhar botão "Novo cadastro" à direita da linha do título */
+/* Alinhar botão "Novo cadastro" */
 .d-flex h1 {
     margin-bottom: 0;
 }
 
+/* Botões */
 .btn-lista {
     min-width: 110px;
     padding: 0.35rem 0.75rem;
     font-size: 0.9rem;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
 }
 
-/* Linhas de detalhes */
-.detalhes-row td {
-    border-top: none;
-    font-size: 0.9rem;
-    padding: 1rem;
-    border-radius: 8px;
+/* Hover genérico para feedback visual */
+.btn-lista:hover {
+    transform: scale(1.03);
 }
+
+/* Botão Excluir - Vermelho */
+.btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+.btn-outline-danger:hover {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+/* Botão Detalhes - Verde IFSC */
+.btn-outline-success {
+    color: #007E3A;
+    border-color: #007E3A;
+}
+.btn-outline-success:hover {
+    color: #fff;
+    background-color: #007E3A;
+    border-color: #007E3A;
+}
+
+/* Modal */
+.modal-header {
+    border-bottom: 1px solid #ddd;
+}
+
+.modal-body {
+    font-size: 0.95rem;
+}
+
+.modal-body .col-md-6 {
+    padding: 0.5rem 0;
+}
+
 .row.g-3 {
     margin-bottom: 1rem;
 }
+
 .card-body {
     padding-bottom: 1.2rem;
 }

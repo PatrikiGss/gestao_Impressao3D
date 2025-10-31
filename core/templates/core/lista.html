@@ -37,11 +37,11 @@
                     </p>
                     <div class="d-flex justify-content-between mt-3">
                         <a href="{% url 'core:excluir' it.pk %}"
-                           class="btn btn-ifsc-outline btn-lista"
+                           class="btn btn-outline-danger btn-lista"
                            onclick="return confirm('Tem certeza que deseja excluir este cadastro?');">
                            Excluir
                         </a>
-                        <button class="btn btn-ifsc btn-lista"
+                        <button class="btn btn-outline-success btn-lista"
                                 data-bs-toggle="modal"
                                 data-bs-target="#modalDetalhes{{ it.id }}">
                             Detalhes
@@ -55,7 +55,7 @@
         <div class="modal fade" id="modalDetalhes{{ it.id }}" tabindex="-1" aria-labelledby="modalLabel{{ it.id }}" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header bg-secondary text-white">
+                    <div class="modal-header bg-success text-white">
                         <h5 class="modal-title" id="modalLabel{{ it.id }}">
                             Detalhes de {{ it.nome }} — {{ it.get_curso_display }}
                         </h5>
@@ -69,11 +69,11 @@
                             <div class="col-md-6"><strong>Impressora:</strong> {{ it.qual_impressora|default:"-" }}</div>
                             <div class="col-md-6"><strong>Filamento:</strong> {{ it.tipo_filamento|default:"-" }}</div>
                             <div class="col-md-6"><strong>Cor:</strong> {{ it.cor|default:"-" }}</div>
-                            <div class="col-md-6"><strong>Quantidade de peças:</strong> {{ it.quant_de_pecas}}</div>
+                            <div class="col-md-6"><strong>Quantidade de peças:</strong> {{ it.quant_de_pecas }}</div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Fechar</button>
                     </div>
                 </div>
             </div>

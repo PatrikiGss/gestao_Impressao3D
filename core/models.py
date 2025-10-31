@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+import os
 
 class CursoChoices(models.TextChoices):
     CIENCIA_DA_COMPUTACAO = "CC", "Ciência da Computação"
@@ -24,16 +25,27 @@ class Resolucao(models.TextChoices):
     MEDIO = "MEDIO", "Médio"
     ALTO = "ALTO", "Alto"
 
+
+# Função para personalizar o nome do arquivo
+def rename_uploaded_file(instance, filename):
+    base, ext = os.path.splitext(filename)
+    nome = instance.nome.replace(" ", "_")  # evita espaços no nome
+    curso = instance.curso.replace(" ", "_")
+    new_filename = f"{nome}-{curso}{ext}"
+    return os.path.join("arquivos", new_filename)
+
+
 class Models(models.Model):
     nome = models.CharField(max_length=50)
     curso = models.CharField(max_length=20, choices=CursoChoices.choices)
     quant_de_pecas = models.IntegerField()
     cor = models.CharField(max_length=20)
-    telefone = models.CharField()
+    telefone = models.CharField(max_length=20)
 
-    # arquivos
-    arq_upload = models.FileField(upload_to="arquivos/", blank=True, null=True)
+    # arquivo ou link (apenas um obrigatório)
+    arq_upload = models.FileField(upload_to=rename_uploaded_file, blank=True, null=True)
     arq_link = models.URLField(blank=True, null=True)
+
     data_envio = models.DateTimeField(default=timezone.now)
 
     # campos técnicos (opcionais)

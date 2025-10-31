@@ -7,80 +7,81 @@
 {% endblock %}
 
 {% block content %}
-<div class="lista-box">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+<div class="lista-box container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Cadastros</h1>
         <a href="{% url 'core:cadastro' %}" class="btn btn-outline-secondary btn-lista">Novo cadastro</a>
     </div>
 
     {% if items %}
-    <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle text-center">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Nome</th>
-                    <th>Curso</th>
-                    <th>Telefone</th>
-                    <th>Arquivo / Link</th>
-                    <th>Data</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for it in items %}
-                <tr>
-                    <td>{{ it.id }}</td>
-                    <td>{{ it.nome }}</td>
-                    <td>{{ it.get_curso_display }}</td>
-                    <td>{{ it.telefone }}</td>
-                    <td>
+    <div class="row g-3">
+        {% for it in items %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ it.nome }}</h5>
+                    <p class="card-text mb-1"><strong>Curso:</strong> {{ it.get_curso_display }}</p>
+                    <p class="card-text mb-1"><strong>Telefone:</strong> {{ it.telefone }}</p>
+                    <p class="card-text mb-1"><strong>Data:</strong> {{ it.data_envio|date:"d/m/Y H:i" }}</p>
+                    <p class="card-text mb-2">
+                        <strong>Arquivo / Link:</strong>
                         {% if it.arq_upload %}
-                            {{ it.arq_upload.name|slice:"8:" }}
+                            <a href="{% url 'core:download_arquivo' it.pk %}" class="text-decoration-none">
+                                {{ it.nome }} - {{ it.get_curso_display }}
+                            </a>
                         {% elif it.arq_link %}
                             <a href="{{ it.arq_link }}" target="_blank">Link</a>
                         {% else %}
                             -
                         {% endif %}
-                    </td>
-                    <td>{{ it.data_envio|date:"d/m/Y H:i" }}</td>
-                    <td>
-                        {% if it.arq_upload %}
-                        <a href="{% url 'core:download_arquivo' it.pk %}" class="btn btn-outline-primary btn-lista">Download</a>
-                        {% endif %}
-                        <a href="{% url 'core:excluir' it.pk %}" class="btn btn-outline-danger btn-lista">Excluir</a>
-                        <button class="btn btn-outline-secondary btn-lista" type="button"
-                                onclick="toggleDetalhes({{ it.id }})">
+                    </p>
+                    <div class="d-flex justify-content-between mt-3">
+                        <a href="{% url 'core:excluir' it.pk %}"
+                           class="btn btn-ifsc-outline btn-lista"
+                           onclick="return confirm('Tem certeza que deseja excluir este cadastro?');">
+                           Excluir
+                        </a>
+                        <button class="btn btn-ifsc btn-lista"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalDetalhes{{ it.id }}">
                             Detalhes
                         </button>
-                    </td>
-                </tr>
-                <tr id="detalhes-{{ it.id }}" class="detalhes-row" style="display:none;">
-                    <td colspan="7" class="text-start bg-light">
-                        <strong>Tipo de preenchimento:</strong> {{ it.tipo_preenchimento|default:"-" }}<br>
-                        <strong>Porcentagem de preenchimento:</strong> {{ it.porcentagem_preenchimento|default:"-" }}<br>
-                        <strong>Resolução:</strong> {{ it.resolucao|default:"-" }}<br>
-                        <strong>Impressora:</strong> {{ it.qual_impressora|default:"-" }}<br>
-                        <strong>Filamento:</strong> {{ it.tipo_filamento|default:"-" }}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Detalhes -->
+        <div class="modal fade" id="modalDetalhes{{ it.id }}" tabindex="-1" aria-labelledby="modalLabel{{ it.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-secondary text-white">
+                        <h5 class="modal-title" id="modalLabel{{ it.id }}">
+                            Detalhes de {{ it.nome }} — {{ it.get_curso_display }}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-2">
+                            <div class="col-md-6"><strong>Tipo de preenchimento:</strong> {{ it.tipo_preenchimento|default:"-" }}</div>
+                            <div class="col-md-6"><strong>Porcentagem de preenchimento:</strong> {{ it.porcentagem_preenchimento|default:"-" }}</div>
+                            <div class="col-md-6"><strong>Resolução:</strong> {{ it.resolucao|default:"-" }}</div>
+                            <div class="col-md-6"><strong>Impressora:</strong> {{ it.qual_impressora|default:"-" }}</div>
+                            <div class="col-md-6"><strong>Filamento:</strong> {{ it.tipo_filamento|default:"-" }}</div>
+                            <div class="col-md-6"><strong>Cor:</strong> {{ it.cor|default:"-" }}</div>
+                            <div class="col-md-6"><strong>Quantidade de peças:</strong> {{ it.quant_de_pecas}}</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
     {% else %}
         <p class="text-center">Nenhum cadastro ainda.</p>
     {% endif %}
 </div>
-
-<script>
-function toggleDetalhes(id) {
-    const row = document.getElementById(`detalhes-${id}`);
-    if (row.style.display === 'none' || row.style.display === '') {
-        row.style.display = 'table-row';
-    } else {
-        row.style.display = 'none';
-    }
-}
-</script>
 {% endblock %}

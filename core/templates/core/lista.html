@@ -20,14 +20,7 @@
                 <div class="card-body">
                     <h5 class="card-title">{{ it.nome }}</h5>
                     <p class="card-text mb-1"><strong>Curso:</strong> {{ it.get_curso_display }}</p>
-                    <p class="card-text mb-1">
-    <strong>Telefone:</strong>
-{% with fone=it.telefone|cut:" "|cut:"(" |cut:")"|cut:"-" %}
-    <a href="https://wa.me/55{{ fone }}" target="_blank" class="text-decoration-none text-success">
-        {{ it.telefone }}
-    </a>
-{% endwith %}
-                    </p>
+                    <p class="card-text mb-1"><strong>Telefone:</strong> {{ it.telefone }}</p>
                     <p class="card-text mb-1"><strong>Data:</strong> {{ it.data_envio|date:"d/m/Y H:i" }}</p>
                     <p class="card-text mb-2">
                         <strong>Arquivo / Link:</strong>

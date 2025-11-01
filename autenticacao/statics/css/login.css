@@ -13,17 +13,14 @@ body {
     box-shadow: 0 0 0 0.15rem rgba(108,117,125,0.25);
 }
 
-/* Botão com aparência transparente e efeito hover */
-.btn-outline-secondary {
-    background-color: transparent;
-    color: #495057;
-    border: 1px solid #adb5bd;
-    transition: all 0.25s ease-in-out;
+/* Botão SIM e ENVIAR - verde IFSC */
+.btn-outline-success {
+    color: #007E3A;
+    border-color: #007E3A;
 }
-
-.btn-outline-secondary:hover {
-    background-color: #6c757d;
-    color: white;
-    border-color: #6c757d;
-    transform: translateY(-1px);
+.btn-outline-success:hover,
+.btn-outline-success.active {
+    background-color: #007E3A;
+    color: #fff;
+    border-color: #007E3A;
 }

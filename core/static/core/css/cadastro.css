@@ -17,18 +17,28 @@ body {
     text-align: center;
 }
 
-.btn-outline-secondary {
-    background-color: transparent;
-    color: #495057;
-    border: 1px solid #adb5bd;
-    transition: all 0.25s ease-in-out;
+/* Botão NÃO - vermelho */
+.btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+.btn-outline-danger:hover,
+.btn-outline-danger.active {
+    background-color: #dc3545;
+    color: #fff;
+    border-color: #dc3545;
 }
 
-.btn-outline-secondary:hover,
-.btn-outline-secondary.active {
-    background-color: #6c757d;
-    color: white;
-    border-color: #6c757d;
+/* Botão SIM e ENVIAR - verde IFSC */
+.btn-outline-success {
+    color: #007E3A;
+    border-color: #007E3A;
+}
+.btn-outline-success:hover,
+.btn-outline-success.active {
+    background-color: #007E3A;
+    color: #fff;
+    border-color: #007E3A;
 }
 
 #campos-tecnicos {

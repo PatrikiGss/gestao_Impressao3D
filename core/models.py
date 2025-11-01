@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 import os
+import re
 
 class CursoChoices(models.TextChoices):
     CIENCIA_DA_COMPUTACAO = "CC", "Ciência da Computação"
@@ -59,3 +60,23 @@ class Models(models.Model):
 
     def __str__(self):
         return f"{self.nome} - {self.curso}"
+
+    # --- add this method ---
+    def telefone_para_whatsapp(self):
+        """
+        Retorna o telefone formatado para usar no link wa.me:
+        - remove tudo que não for dígito
+        - se já tiver '55' no início, retorna assim
+        - caso contrário, adiciona o DDI do Brasil '55'
+        Retorna string vazia se não houver dígitos.
+        """
+        if not self.telefone:
+            return ''
+        digits = re.sub(r'\D', '', self.telefone)  # remove tudo que não for dígito
+        if not digits:
+            return ''
+        # remove zeros à esquerda desnecessários? aqui mantemos simples:
+        if digits.startswith('55'):
+            return digits
+        # evita números muito curtos (ex.: apenas 9)
+        return '55' + digits

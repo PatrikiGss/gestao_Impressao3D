@@ -13,14 +13,17 @@ body {
     box-shadow: 0 0 0 0.15rem rgba(108,117,125,0.25);
 }
 
-/* Botão SIM e ENVIAR - verde IFSC */
+/* Botão ENTRAR - verde IFSC */
 .btn-outline-success {
+    background-color: transparent;
     color: #007E3A;
-    border-color: #007E3A;
+    border: 1px solid #007E3A;
+    transition: all 0.25s ease-in-out;
 }
-.btn-outline-success:hover,
-.btn-outline-success.active {
+
+.btn-outline-success:hover {
     background-color: #007E3A;
     color: #fff;
     border-color: #007E3A;
+    transform: translateY(-1px);
 }

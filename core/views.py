@@ -29,8 +29,15 @@ def sucesso(request):
 
 @login_required
 def lista_models(request):
-    items = Models.objects.order_by('-created_at')
-    return render(request, 'core/lista.html', {'items': items})
+    pendentes = Models.objects.filter(status='PENDENTE').order_by('-created_at')
+    producao = Models.objects.filter(status='PRODUCAO').order_by('-created_at')
+    concluidos = Models.objects.filter(status='CONCLUIDO').order_by('-created_at')
+
+    return render(request, 'core/lista.html', {
+        'pendentes': pendentes,
+        'producao': producao,
+        'concluidos': concluidos,
+    })
 
 def download_arquivo(request, pk):
     item = get_object_or_404(Models, pk=pk)
@@ -55,3 +62,10 @@ def excluir(request, pk):
     item.delete()
     return redirect('core:lista_models')
 
+@login_required
+def atualizar_status(request, pk, novo_status):
+    item = get_object_or_404(Models, pk=pk)
+    if novo_status in ['PENDENTE', 'PRODUCAO', 'CONCLUIDO']:
+        item.status = novo_status
+        item.save()
+    return redirect('core:lista_models')

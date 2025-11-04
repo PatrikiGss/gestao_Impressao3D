@@ -35,6 +35,12 @@ def rename_uploaded_file(instance, filename):
     new_filename = f"{nome}-{curso}{ext}"
     return os.path.join("arquivos", new_filename)
 
+STATUS_CHOICES = [
+        ('PENDENTE', 'Pendente'),
+        ('PRODUCAO', 'Em produção'),
+        ('CONCLUIDO', 'Concluído'),
+    ]
+
 
 class Models(models.Model):
     nome = models.CharField(max_length=50)
@@ -58,8 +64,6 @@ class Models(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.nome} - {self.curso}"
 
     # --- add this method ---
     def telefone_para_whatsapp(self):
@@ -80,3 +84,14 @@ class Models(models.Model):
             return digits
         # evita números muito curtos (ex.: apenas 9)
         return '55' + digits
+    
+        # Novo campo
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='PENDENTE',
+        editable=False 
+    )
+    
+    def __str__(self):
+        return f"{self.nome} - {self.curso}"

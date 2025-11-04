@@ -1,0 +1,83 @@
+{% if items %}
+<div class="row g-3">
+    {% for it in items %}
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ it.nome }}</h5>
+                <p><strong>Curso:</strong> {{ it.get_curso_display }}</p>
+                <p><strong>Telefone:</strong>
+                    {% if it.telefone_para_whatsapp %}
+                        <a href="https://wa.me/{{ it.telefone_para_whatsapp }}" target="_blank" class="text-decoration-none text-success">{{ it.telefone }}</a>
+                    {% else %}
+                        {{ it.telefone }}
+                    {% endif %}
+                </p>
+                <p><strong>Data:</strong> {{ it.data_envio|date:"d/m/Y H:i" }}</p>
+                <p>
+                    <strong>Arquivo / Link:</strong>
+                    {% if it.arq_upload %}
+                        <a href="{% url 'core:download_arquivo' it.pk %}">
+                            {{ it.nome }} - {{ it.get_curso_display }}
+                        </a>
+                    {% elif it.arq_link %}
+                        <a href="{{ it.arq_link }}" target="_blank">Link</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+
+                <!-- BOTÕES DE AÇÃO -->
+                <div class="d-flex justify-content-between mt-3">
+                    {% if status == "PENDENTE" %}
+                        <a href="{% url 'core:atualizar_status' it.pk 'PRODUCAO' %}" class="btn btn-outline-primary btn-sm">→ Produção</a>
+                        <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetalhes{{ it.id }}">Detalhes</button>
+
+                    {% elif status == "PRODUCAO" %}
+                        <a href="{% url 'core:atualizar_status' it.pk 'CONCLUIDO' %}" class="btn btn-outline-success btn-sm">✓ Finalizar</a>
+                        <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetalhes{{ it.id }}">Detalhes</button>
+
+                    {% elif status == "CONCLUIDO" %}
+                        <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetalhes{{ it.id }}">Detalhes</button>
+                        <a href="{% url 'core:excluir' it.pk %}" class="btn btn-outline-danger btn-sm"
+                           onclick="return confirm('Tem certeza que deseja excluir este cadastro?');">
+                           Excluir
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE DETALHES -->
+    <div class="modal fade" id="modalDetalhes{{ it.id }}" tabindex="-1" aria-labelledby="modalLabel{{ it.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="modalLabel{{ it.id }}">
+                        Detalhes de {{ it.nome }} — {{ it.get_curso_display }}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-2">
+                        <div class="col-md-6"><strong>Tipo de preenchimento:</strong> {{ it.tipo_preenchimento|default:"-" }}</div>
+                        <div class="col-md-6"><strong>Porcentagem de preenchimento:</strong> {{ it.porcentagem_preenchimento|default:"-" }}</div>
+                        <div class="col-md-6"><strong>Resolução:</strong> {{ it.resolucao|default:"-" }}</div>
+                        <div class="col-md-6"><strong>Impressora:</strong> {{ it.qual_impressora|default:"-" }}</div>
+                        <div class="col-md-6"><strong>Filamento:</strong> {{ it.tipo_filamento|default:"-" }}</div>
+                        <div class="col-md-6"><strong>Cor:</strong> {{ it.cor|default:"-" }}</div>
+                        <div class="col-md-6"><strong>Quantidade de peças:</strong> {{ it.quant_de_pecas }}</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-center text-muted">Nenhum cadastro nesta categoria.</p>
+{% endif %}

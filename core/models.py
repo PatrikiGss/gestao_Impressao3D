@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 import os
 import re
+from django.conf import settings
 
 class CursoChoices(models.TextChoices):
     CIENCIA_DA_COMPUTACAO = "CC", "Ciência da Computação"
@@ -95,3 +96,35 @@ class Models(models.Model):
     
     def __str__(self):
         return f"{self.nome} - {self.curso}"
+
+class HistoricoStatus(models.Model):
+    """
+    Registra alterações de status de um pedido (Models).
+    Armazena: qual pedido, quem fez a mudança (User), status antigo, status novo e timestamp.
+    """
+    impressao = models.ForeignKey(
+        Models,
+        on_delete=models.SET_NULL,  # mantém o histórico mesmo se o cadastro for apagado
+        null=True,
+        blank=True,
+        related_name='historico_status'
+    )
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    status_antigo = models.CharField(max_length=50, blank=True, null=True)
+    status_novo = models.CharField(max_length=50)
+    data_alteracao = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-data_alteracao']
+        verbose_name = 'Histórico de status'
+        verbose_name_plural = 'Históricos de status'
+
+    def __str__(self):
+        usuario = self.usuario.username if self.usuario else 'Sistema/Não autenticado'
+        impressao_nome = self.impressao.nome if self.impressao else '[Impressão removida]'
+        return f"{impressao_nome} — {self.status_antigo or '—'} → {self.status_novo} ({usuario})"

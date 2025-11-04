@@ -6,6 +6,7 @@ from django.http import HttpResponse, Http404
 from django.conf import settings
 import os
 from django.contrib.auth.decorators import login_required
+from .models import Models, HistoricoStatus
 
 def home(request):
     return render(request, 'core/home.html')
@@ -69,3 +70,24 @@ def atualizar_status(request, pk, novo_status):
         item.status = novo_status
         item.save()
     return redirect('core:lista_models')
+
+@login_required
+def atualizar_status(request, pk, novo_status):
+    # buscar o objeto
+    item = get_object_or_404(Models, pk=pk)
+    status_antigo = item.status if hasattr(item, 'status') else None
+
+    # atualiza o status
+    item.status = novo_status
+    item.save()
+
+    # registra o histórico
+    HistoricoStatus.objects.create(
+        impressao=item,
+        usuario=request.user if request.user.is_authenticated else None,
+        status_antigo=status_antigo,
+        status_novo=novo_status
+    )
+
+    # redireciona de volta para a lista
+    return redirect(request.META.get('HTTP_REFERER', 'core:lista'))

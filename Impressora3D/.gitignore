@@ -1,0 +1,33 @@
+# Ambiente e configs
+.env
+*.env
+__pycache__/
+*.py[cod]
+*.DS_Store
+
+# Banco local
+db.sqlite3
+
+# Mídias e uploads
+/media/
+arquivos/
+uploads/
+
+# Migrations compiladas
+*/migrations/__pycache__/
+*/migrations/*.pyc
+
+# Ambiente virtual
+venv/
+env/
+
+# Arquivos temporários
+*.log
+*.pot
+*.py~ 
+*.swp
+*.swo
+
+# Config do editor
+.vscode/
+.idea/

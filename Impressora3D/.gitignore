@@ -10,8 +10,8 @@ db.sqlite3
 
 # Mídias e uploads
 /media/
-arquivos/
-uploads/
+/arquivos/
+/uploads/
 
 # Migrations compiladas
 */migrations/__pycache__/

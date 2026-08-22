@@ -20,7 +20,7 @@ db.sqlite3
 # Ambiente virtual
 venv/
 env/
-
+venv
 # Arquivos temporários
 *.log
 *.pot

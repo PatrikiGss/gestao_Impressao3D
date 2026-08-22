@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config, Csv
+from django.contrib.messages import constants as message_constants
 from django.core.exceptions import ImproperlyConfigured
 import os
 
@@ -162,6 +163,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# O Django marca erros com a tag 'error', mas o Bootstrap usa 'danger'.
+# Traduzir aqui deixa o template escrever só alert-{{ message.tags }}.
+MESSAGE_TAGS = {message_constants.ERROR: 'danger'}
 
 LOGIN_URL = '/accounts/login/'          # usado por @login_required
 LOGIN_REDIRECT_URL = '/'                # após login, voltamos pra home (opção 3)

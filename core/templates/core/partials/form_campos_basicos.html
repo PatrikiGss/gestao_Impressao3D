@@ -1,0 +1,52 @@
+{% load widget_tweaks %}
+{% comment %}Campos que todo solicitante preenche. Compartilhado entre cadastro e edição
+   para os dois não saírem do ar quando um campo muda.{% endcomment %}
+
+{% if form.non_field_errors %}
+<div class="alert alert-danger">
+    {% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}
+</div>
+{% endif %}
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.nome.id_for_label }}">Nome *</label>
+    {{ form.nome|add_class:"form-control"|add_error_class:"is-invalid"|attr:"maxlength:50" }}
+    {% for err in form.nome.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.curso.id_for_label }}">Curso *</label>
+    {{ form.curso|add_class:"form-select"|add_error_class:"is-invalid" }}
+    {% for err in form.curso.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.quant_de_pecas.id_for_label }}">Quantidade de peças *</label>
+    {{ form.quant_de_pecas|add_class:"form-control"|add_error_class:"is-invalid"|attr:"min:1" }}
+    {% for err in form.quant_de_pecas.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.cor.id_for_label }}">Cor *</label>
+    {{ form.cor|add_class:"form-control"|add_error_class:"is-invalid"|attr:"maxlength:20" }}
+    {% for err in form.cor.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.telefone.id_for_label }}">Telefone *</label>
+    {{ form.telefone|add_class:"form-control"|add_error_class:"is-invalid" }}
+    {% for err in form.telefone.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.arq_upload.id_for_label }}">Arquivo (.stl, .obj, .3mf, .gcode):</label>
+    {{ form.arq_upload|add_class:"form-control"|add_error_class:"is-invalid" }}
+    <div class="form-text">Tamanho máximo: {{ tamanho_maximo_mb }} MB.</div>
+    {% for err in form.arq_upload.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.arq_link.id_for_label }}">Link do arquivo (opcional):</label>
+    {{ form.arq_link|add_class:"form-control"|add_error_class:"is-invalid" }}
+    {% for err in form.arq_link.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>

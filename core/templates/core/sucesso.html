@@ -14,7 +14,13 @@
     </h2>
     <div class="mt-4">
         <a href="{% url 'core:cadastro' %}" class="btn btn-outline-secondary btn-sucesso">Criar outro</a>
-        <a href="{% url 'core:lista_models' %}" class="btn btn-outline-primary btn-sucesso">Ver lista</a>
+        {% comment %}A lista é restrita à equipe: para o solicitante anônimo esse botão
+           só levava à tela de login. Ele volta para a home.{% endcomment %}
+        {% if user.is_authenticated %}
+            <a href="{% url 'core:lista_models' %}" class="btn btn-outline-primary btn-sucesso">Ver lista</a>
+        {% else %}
+            <a href="{% url 'core:home' %}" class="btn btn-outline-primary btn-sucesso">Voltar ao início</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

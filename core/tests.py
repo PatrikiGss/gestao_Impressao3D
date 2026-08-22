@@ -198,3 +198,160 @@ class ValidacaoServidorTest(TestCase):
         dados = self.dados_base()
         dados.pop('arq_link')
         self.assertFalse(ModelsForm(data=dados).is_valid())
+
+
+class EdicaoTest(TestCase):
+    """Antes não existia edição: corrigir um telefone exigia apagar e refazer."""
+
+    def setUp(self):
+        self.usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.pedido = criar_pedido()
+        self.url = reverse('core:editar', args=[self.pedido.pk])
+
+    def dados_edicao(self, **kwargs):
+        dados = {
+            'nome': 'Fulano',
+            'curso': 'CC',
+            'quant_de_pecas': 1,
+            'cor': 'azul',
+            'telefone': '(49) 99999-9999',
+            'arq_link': 'https://exemplo.br/peca.stl',
+        }
+        dados.update(kwargs)
+        return dados
+
+    def test_editar_exige_login(self):
+        resposta = self.client.get(self.url)
+        self.assertEqual(resposta.status_code, 302)
+        self.assertIn('/accounts/login/', resposta['Location'])
+
+    def test_get_mostra_formulario_preenchido(self):
+        self.client.force_login(self.usuario)
+        resposta = self.client.get(self.url)
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.context['form'].instance.pk, self.pedido.pk)
+
+    def test_post_salva_alteracoes(self):
+        self.client.force_login(self.usuario)
+        resposta = self.client.post(self.url, self.dados_edicao(telefone='(49) 98888-7777'))
+        self.assertRedirects(resposta, reverse('core:lista_models'))
+        self.pedido.refresh_from_db()
+        self.assertEqual(self.pedido.telefone, '(49) 98888-7777')
+
+    def test_post_invalido_nao_salva(self):
+        self.client.force_login(self.usuario)
+        resposta = self.client.post(self.url, self.dados_edicao(telefone='xxx'))
+        self.assertEqual(resposta.status_code, 200)
+        self.assertIn('telefone', resposta.context['form'].errors)
+        self.pedido.refresh_from_db()
+        self.assertEqual(self.pedido.telefone, '(49) 99999-9999')
+
+    def test_edicao_nao_mexe_no_status(self):
+        self.pedido.status = 'PRODUCAO'
+        self.pedido.save()
+        self.client.force_login(self.usuario)
+        self.client.post(self.url, self.dados_edicao(cor='verde'))
+        self.pedido.refresh_from_db()
+        self.assertEqual(self.pedido.status, 'PRODUCAO')
+        self.assertEqual(self.pedido.cor, 'verde')
+
+
+class BuscaEFiltroTest(TestCase):
+    def setUp(self):
+        self.usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.client.force_login(self.usuario)
+        criar_pedido(nome='Ana Souza', curso='CC', cor='azul')
+        criar_pedido(nome='Bruno Lima', curso='ENG-MEC', cor='vermelho')
+
+    def nomes_pendentes(self, resposta):
+        return sorted(p.nome for p in resposta.context['pendentes'])
+
+    def test_sem_filtro_traz_todos(self):
+        resposta = self.client.get(reverse('core:lista_models'))
+        self.assertEqual(self.nomes_pendentes(resposta), ['Ana Souza', 'Bruno Lima'])
+
+    def test_busca_por_nome(self):
+        resposta = self.client.get(reverse('core:lista_models'), {'q': 'ana'})
+        self.assertEqual(self.nomes_pendentes(resposta), ['Ana Souza'])
+
+    def test_busca_por_cor(self):
+        resposta = self.client.get(reverse('core:lista_models'), {'q': 'vermelho'})
+        self.assertEqual(self.nomes_pendentes(resposta), ['Bruno Lima'])
+
+    def test_filtro_por_curso(self):
+        resposta = self.client.get(reverse('core:lista_models'), {'curso': 'ENG-MEC'})
+        self.assertEqual(self.nomes_pendentes(resposta), ['Bruno Lima'])
+
+    def test_paginacao_por_aba(self):
+        from .views import PEDIDOS_POR_PAGINA
+        for i in range(PEDIDOS_POR_PAGINA + 3):
+            criar_pedido(nome=f'Extra {i}')
+
+        primeira = self.client.get(reverse('core:lista_models'))
+        self.assertEqual(len(primeira.context['pendentes']), PEDIDOS_POR_PAGINA)
+        self.assertTrue(primeira.context['pendentes'].has_next())
+
+        segunda = self.client.get(reverse('core:lista_models'), {'pend': 2})
+        self.assertEqual(segunda.context['pendentes'].number, 2)
+
+    def test_paginacao_de_uma_aba_nao_afeta_a_outra(self):
+        resposta = self.client.get(reverse('core:lista_models'), {'pend': 2})
+        self.assertEqual(resposta.context['producao'].number, 1)
+
+
+class InterfaceListaTest(TestCase):
+    def setUp(self):
+        self.usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.client.force_login(self.usuario)
+        self.pedido = criar_pedido(resolucao='MEDIO', qual_impressora='Ender_3-SE')
+
+    def test_modal_mostra_rotulo_e_nao_o_codigo_do_banco(self):
+        resposta = self.client.get(reverse('core:lista_models'))
+        self.assertContains(resposta, 'Médio')
+        self.assertContains(resposta, 'Ender 3 SE')
+
+    def test_historico_aparece_na_lista(self):
+        HistoricoStatus.objects.create(
+            impressao=self.pedido, usuario=self.usuario,
+            status_antigo='PENDENTE', status_novo='PRODUCAO',
+        )
+        resposta = self.client.get(reverse('core:lista_models'))
+        self.assertContains(resposta, 'Histórico de status')
+
+    def test_lista_tem_botao_de_editar(self):
+        resposta = self.client.get(reverse('core:lista_models'))
+        self.assertContains(resposta, reverse('core:editar', args=[self.pedido.pk]))
+
+
+class MensagensTest(TestCase):
+    def setUp(self):
+        self.usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.client.force_login(self.usuario)
+        self.pedido = criar_pedido()
+
+    def texto_das_mensagens(self, resposta):
+        return [str(m) for m in resposta.context['messages']]
+
+    def test_mudanca_de_status_avisa_o_usuario(self):
+        resposta = self.client.post(
+            reverse('core:atualizar_status', args=[self.pedido.pk, 'PRODUCAO']), follow=True
+        )
+        self.assertTrue(any('Em produção' in m for m in self.texto_das_mensagens(resposta)))
+
+    def test_exclusao_avisa_o_usuario(self):
+        resposta = self.client.post(reverse('core:excluir', args=[self.pedido.pk]), follow=True)
+        self.assertTrue(any('excluído' in m for m in self.texto_das_mensagens(resposta)))
+
+
+class PaginaSucessoTest(TestCase):
+    def test_anonimo_nao_recebe_link_para_area_restrita(self):
+        """O botão "Ver lista" só levava o solicitante à tela de login."""
+        resposta = self.client.get(reverse('core:sucesso'))
+        self.assertNotContains(resposta, reverse('core:lista_models'))
+        self.assertContains(resposta, 'Voltar ao início')
+
+    def test_logado_continua_vendo_o_link(self):
+        usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.client.force_login(usuario)
+        resposta = self.client.get(reverse('core:sucesso'))
+        self.assertContains(resposta, reverse('core:lista_models'))

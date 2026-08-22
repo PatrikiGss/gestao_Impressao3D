@@ -10,16 +10,46 @@
 <div class="lista-box container">
     <h1 class="mb-4 text-center">Gerenciamento de Impressões 3D</h1>
 
+    <!-- Busca e filtro -->
+    <form method="get" class="row g-2 align-items-end mb-4">
+        <div class="col-12 col-md-5">
+            <label for="q" class="form-label">Buscar</label>
+            <input type="search" class="form-control" id="q" name="q" value="{{ busca }}"
+                   placeholder="Nome, cor ou telefone">
+        </div>
+        <div class="col-12 col-md-4">
+            <label for="curso" class="form-label">Curso</label>
+            <select class="form-select" id="curso" name="curso">
+                <option value="">Todos os cursos</option>
+                {% for valor, rotulo in cursos %}
+                <option value="{{ valor }}" {% if valor == curso_selecionado %}selected{% endif %}>{{ rotulo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-outline-success flex-grow-1">Filtrar</button>
+            {% if tem_filtro %}
+            <a href="{% url 'core:lista_models' %}" class="btn btn-outline-secondary">Limpar</a>
+            {% endif %}
+        </div>
+    </form>
+
     <!-- Abas Bootstrap -->
     <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="pendentes-tab" data-bs-toggle="tab" data-bs-target="#pendentes" type="button" role="tab">Pendentes</button>
+            <button class="nav-link active" id="pendentes-tab" data-bs-toggle="tab" data-bs-target="#pendentes" type="button" role="tab">
+                Pendentes <span class="badge bg-secondary">{{ pendentes.paginator.count }}</span>
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="producao-tab" data-bs-toggle="tab" data-bs-target="#producao" type="button" role="tab">Em produção</button>
+            <button class="nav-link" id="producao-tab" data-bs-toggle="tab" data-bs-target="#producao" type="button" role="tab">
+                Em produção <span class="badge bg-secondary">{{ producao.paginator.count }}</span>
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="concluidos-tab" data-bs-toggle="tab" data-bs-target="#concluidos" type="button" role="tab">Concluídos</button>
+            <button class="nav-link" id="concluidos-tab" data-bs-toggle="tab" data-bs-target="#concluidos" type="button" role="tab">
+                Concluídos <span class="badge bg-secondary">{{ concluidos.paginator.count }}</span>
+            </button>
         </li>
     </ul>
 
@@ -27,18 +57,22 @@
     <div class="tab-content" id="myTabContent">
         <!-- PENDENTES -->
         <div class="tab-pane fade show active" id="pendentes" role="tabpanel">
-            {% include 'core/partials/lista_cards.html' with items=pendentes status="PENDENTE" %}
+            {% include 'core/partials/lista_cards.html' with items=pendentes status="PENDENTE" parametro_pagina="pend" aba="pendentes" %}
         </div>
 
         <!-- PRODUÇÃO -->
         <div class="tab-pane fade" id="producao" role="tabpanel">
-            {% include 'core/partials/lista_cards.html' with items=producao status="PRODUCAO" %}
+            {% include 'core/partials/lista_cards.html' with items=producao status="PRODUCAO" parametro_pagina="prod" aba="producao" %}
         </div>
 
         <!-- CONCLUÍDOS -->
         <div class="tab-pane fade" id="concluidos" role="tabpanel">
-            {% include 'core/partials/lista_cards.html' with items=concluidos status="CONCLUIDO" %}
+            {% include 'core/partials/lista_cards.html' with items=concluidos status="CONCLUIDO" parametro_pagina="conc" aba="concluidos" %}
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'core/js/lista.js' %}"></script>
 {% endblock %}

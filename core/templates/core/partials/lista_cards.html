@@ -8,7 +8,7 @@
                 <p><strong>Curso:</strong> {{ it.get_curso_display }}</p>
                 <p><strong>Telefone:</strong>
                     {% if it.telefone_para_whatsapp %}
-                        <a href="https://wa.me/{{ it.telefone_para_whatsapp }}" target="_blank" class="text-decoration-none text-success">{{ it.telefone }}</a>
+                        <a href="https://wa.me/{{ it.telefone_para_whatsapp }}" target="_blank" rel="noopener" class="text-decoration-none text-success">{{ it.telefone }}</a>
                     {% else %}
                         {{ it.telefone }}
                     {% endif %}
@@ -32,24 +32,36 @@
                 <!-- Ações que mudam dados vão por POST: como link GET, bastava
                      conhecer a URL (ou um crawler passar por ela) para alterar
                      ou apagar o registro, sem token CSRF nenhum. -->
-                <div class="d-flex justify-content-between mt-3">
+                <div class="d-flex flex-wrap gap-2 mt-3">
                     {% if status == "PENDENTE" %}
-                        <form method="post" action="{% url 'core:atualizar_status' it.pk 'PRODUCAO' %}" class="d-inline">
+                        <form method="post" action="{% url 'core:atualizar_status' it.pk 'PRODUCAO' %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-outline-primary btn-sm">→ Produção</button>
                         </form>
-                        <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetalhes{{ it.id }}">Detalhes</button>
 
                     {% elif status == "PRODUCAO" %}
-                        <form method="post" action="{% url 'core:atualizar_status' it.pk 'CONCLUIDO' %}" class="d-inline">
+                        <form method="post" action="{% url 'core:atualizar_status' it.pk 'CONCLUIDO' %}">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-outline-success btn-sm">✓ Finalizar</button>
                         </form>
-                        <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetalhes{{ it.id }}">Detalhes</button>
+                        {# Sem esta volta, um clique errado em "Finalizar" era definitivo #}
+                        <form method="post" action="{% url 'core:atualizar_status' it.pk 'PENDENTE' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">← Pendente</button>
+                        </form>
 
                     {% elif status == "CONCLUIDO" %}
-                        <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetalhes{{ it.id }}">Detalhes</button>
-                        <form method="post" action="{% url 'core:excluir' it.pk %}" class="d-inline"
+                        <form method="post" action="{% url 'core:atualizar_status' it.pk 'PRODUCAO' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">← Produção</button>
+                        </form>
+                    {% endif %}
+
+                    <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetalhes{{ it.id }}">Detalhes</button>
+                    <a href="{% url 'core:editar' it.pk %}" class="btn btn-outline-warning btn-sm">Editar</a>
+
+                    {% if status == "CONCLUIDO" %}
+                        <form method="post" action="{% url 'core:excluir' it.pk %}"
                               onsubmit="return confirm('Tem certeza que deseja excluir este cadastro?');">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-outline-danger btn-sm">Excluir</button>
@@ -58,37 +70,98 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- MODAL DE DETALHES -->
-    <div class="modal fade" id="modalDetalhes{{ it.id }}" tabindex="-1" aria-labelledby="modalLabel{{ it.id }}" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="modalLabel{{ it.id }}">
-                        Detalhes de {{ it.nome }} — {{ it.get_curso_display }}
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row g-2">
-                        <div class="col-md-6"><strong>Tipo de preenchimento:</strong> {{ it.tipo_preenchimento|default:"-" }}</div>
-                        <div class="col-md-6"><strong>Porcentagem de preenchimento:</strong> {{ it.porcentagem_preenchimento|default:"-" }}</div>
-                        <div class="col-md-6"><strong>Resolução:</strong> {{ it.resolucao|default:"-" }}</div>
-                        <div class="col-md-6"><strong>Impressora:</strong> {{ it.qual_impressora|default:"-" }}</div>
-                        <div class="col-md-6"><strong>Filamento:</strong> {{ it.tipo_filamento|default:"-" }}</div>
-                        <div class="col-md-6"><strong>Cor:</strong> {{ it.cor|default:"-" }}</div>
-                        <div class="col-md-6"><strong>Quantidade de peças:</strong> {{ it.quant_de_pecas }}</div>
+        <!-- MODAL DE DETALHES -->
+        <div class="modal fade" id="modalDetalhes{{ it.id }}" tabindex="-1" aria-labelledby="modalLabel{{ it.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="modalLabel{{ it.id }}">
+                            Detalhes de {{ it.nome }} — {{ it.get_curso_display }}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Fechar</button>
+                    <div class="modal-body">
+                        <div class="row g-2">
+                            <div class="col-md-6"><strong>Tipo de preenchimento:</strong> {{ it.tipo_preenchimento|default:"-" }}</div>
+                            <div class="col-md-6"><strong>Porcentagem de preenchimento:</strong> {{ it.porcentagem_preenchimento|default:"-" }}</div>
+                            {# get_..._display mostra o rótulo ("Médio") em vez do código gravado ("MEDIO") #}
+                            <div class="col-md-6"><strong>Resolução:</strong> {{ it.get_resolucao_display|default:"-" }}</div>
+                            <div class="col-md-6"><strong>Impressora:</strong> {{ it.get_qual_impressora_display|default:"-" }}</div>
+                            <div class="col-md-6"><strong>Filamento:</strong> {{ it.get_tipo_filamento_display|default:"-" }}</div>
+                            <div class="col-md-6"><strong>Cor:</strong> {{ it.cor|default:"-" }}</div>
+                            <div class="col-md-6"><strong>Quantidade de peças:</strong> {{ it.quant_de_pecas }}</div>
+                        </div>
+
+                        <!-- Histórico de status: antes só existia no admin do Django -->
+                        <hr class="my-3">
+                        <h6>Histórico de status</h6>
+                        {% with historico=it.historico_status.all %}
+                            {% if historico %}
+                            <ul class="list-group list-group-flush">
+                                {% for h in historico %}
+                                <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <span>
+                                        <span class="text-muted">{{ h.status_antigo|default:"—" }}</span>
+                                        →
+                                        <strong>{{ h.status_novo }}</strong>
+                                    </span>
+                                    <small class="text-muted">
+                                        {{ h.data_alteracao|date:"d/m/Y H:i" }}
+                                        · {{ h.usuario.username|default:"Sistema" }}
+                                    </small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted mb-0">Nenhuma mudança de status registrada ainda.</p>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Fechar</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     {% endfor %}
 </div>
+
+{% if items.paginator.num_pages > 1 %}
+{% comment %}Cada aba tem seu próprio parâmetro de página, e os links carregam junto a
+   busca/filtro ativos e a âncora da aba para não voltar sempre em "Pendentes".{% endcomment %}
+<nav class="mt-4" aria-label="Paginação">
+    <ul class="pagination justify-content-center">
+        {% comment %}previous_page_number/next_page_number levantam EmptyPage nas pontas,
+           e o template não silencia essa exceção: só chamar dentro do if.{% endcomment %}
+        <li class="page-item {% if not items.has_previous %}disabled{% endif %}">
+            {% if items.has_previous %}
+            <a class="page-link" href="?{% if filtros %}{{ filtros }}&{% endif %}{{ parametro_pagina }}={{ items.previous_page_number }}#{{ aba }}">Anterior</a>
+            {% else %}
+            <span class="page-link">Anterior</span>
+            {% endif %}
+        </li>
+        <li class="page-item disabled">
+            <span class="page-link">Página {{ items.number }} de {{ items.paginator.num_pages }}</span>
+        </li>
+        <li class="page-item {% if not items.has_next %}disabled{% endif %}">
+            {% if items.has_next %}
+            <a class="page-link" href="?{% if filtros %}{{ filtros }}&{% endif %}{{ parametro_pagina }}={{ items.next_page_number }}#{{ aba }}">Próxima</a>
+            {% else %}
+            <span class="page-link">Próxima</span>
+            {% endif %}
+        </li>
+    </ul>
+</nav>
+{% endif %}
+
 {% else %}
-<p class="text-center text-muted">Nenhum cadastro nesta categoria.</p>
+<p class="text-center text-muted">
+    {% if tem_filtro %}
+        Nenhum cadastro nesta categoria com os filtros aplicados.
+    {% else %}
+        Nenhum cadastro nesta categoria.
+    {% endif %}
+</p>
 {% endif %}

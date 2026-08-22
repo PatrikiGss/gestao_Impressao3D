@@ -1,0 +1,32 @@
+{% load widget_tweaks %}
+{# Parâmetros de impressão. Opcionais: o solicitante só preenche se souber. #}
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.tipo_preenchimento.id_for_label }}">Tipo de preenchimento:</label>
+    {{ form.tipo_preenchimento|add_class:"form-control"|add_error_class:"is-invalid"|attr:"maxlength:20" }}
+    {% for err in form.tipo_preenchimento.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.porcentagem_preenchimento.id_for_label }}">Porcentagem de preenchimento:</label>
+    {{ form.porcentagem_preenchimento|add_class:"form-control"|add_error_class:"is-invalid"|attr:"min:0"|attr:"max:100" }}
+    {% for err in form.porcentagem_preenchimento.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.resolucao.id_for_label }}">Resolução:</label>
+    {{ form.resolucao|add_class:"form-select"|add_error_class:"is-invalid" }}
+    {% for err in form.resolucao.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.qual_impressora.id_for_label }}">Qual impressora:</label>
+    {{ form.qual_impressora|add_class:"form-select"|add_error_class:"is-invalid" }}
+    {% for err in form.qual_impressora.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="{{ form.tipo_filamento.id_for_label }}">Tipo de filamento:</label>
+    {{ form.tipo_filamento|add_class:"form-select"|add_error_class:"is-invalid" }}
+    {% for err in form.tipo_filamento.errors %}<div class="text-danger small mt-1">{{ err }}</div>{% endfor %}
+</div>

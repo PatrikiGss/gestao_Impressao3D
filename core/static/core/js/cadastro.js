@@ -55,9 +55,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- VALIDAÇÃO GERAL ANTES DE ENVIAR (SEU CÓDIGO) ---
     const form = document.getElementById('form-cadastro');
     if (form) {
+        // A tela de edição reusa este script, mas não tem a caixa de alerta
+        // nem exige novo arquivo (o registro já pode ter um enviado antes).
+        const alertBox = document.getElementById('alert-erro');
+        const exigirArquivo = form.dataset.exigirArquivo !== 'false';
+
+        function mostrarErro(mensagem) {
+            if (!alertBox) return;
+            alertBox.textContent = mensagem;
+            alertBox.classList.remove('d-none');
+        }
+
         form.addEventListener('submit', function(e){
-            const alertBox = document.getElementById('alert-erro');
-            alertBox.classList.add('d-none');
+            if (alertBox) alertBox.classList.add('d-none');
             let valido = true;
 
             const obrigatorios = ['nome', 'curso', 'quant_de_pecas', 'cor', 'telefone'];
@@ -77,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const temArquivo = arquivo && arquivo.files.length > 0;
             const temLink = link && link.value.trim() !== '';
 
-            if (!temArquivo && !temLink) {
+            if (exigirArquivo && !temArquivo && !temLink) {
                 if (arquivo) arquivo.classList.add('is-invalid');
                 if (link) link.classList.add('is-invalid');
                 valido = false;
@@ -88,8 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!valido) {
                 e.preventDefault();
-                alertBox.textContent = '⚠️ Por favor, preencha todos os campos obrigatórios.';
-                alertBox.classList.remove('d-none');
+                mostrarErro('⚠️ Por favor, preencha todos os campos obrigatórios.');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 return;
             }

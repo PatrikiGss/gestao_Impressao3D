@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
+from django.views.decorators.http import require_POST
 
 def login_view(request):
     # se já autenticado, redireciona para home
@@ -20,6 +21,9 @@ def login_view(request):
     return render(request, 'autenticacao/login.html', {'form': form})
 
 
+@require_POST
 def logout_view(request):
+    # Exige POST: por GET, um simples <img src="/accounts/logout/"> em qualquer
+    # página deslogava o administrador.
     logout(request)
     return redirect('core:home')

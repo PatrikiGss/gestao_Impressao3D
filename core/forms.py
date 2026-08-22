@@ -4,6 +4,11 @@ from .models import Models
 
 EXTENSOES_PERMITIDAS = {".stl", ".obj", ".3mf", ".gcode"}
 
+# Sem um teto, um único POST pode encher o disco do servidor.
+# Atenção: esta checagem só roda depois do upload chegar inteiro. O limite
+# definitivo é do servidor web (ex.: client_max_body_size no nginx).
+TAMANHO_MAXIMO_MB = 25
+
 class ModelsForm(forms.ModelForm):
     class Meta:
         model = Models
@@ -28,5 +33,11 @@ class ModelsForm(forms.ModelForm):
             if extensao not in EXTENSOES_PERMITIDAS:
                 raise forms.ValidationError(
                     "Formato inválido! Envie um arquivo 3D (.stl, .obj, .3mf ou .gcode)."
+                )
+
+            if arquivo.size > TAMANHO_MAXIMO_MB * 1024 * 1024:
+                raise forms.ValidationError(
+                    f"Arquivo muito grande ({arquivo.size / 1024 / 1024:.1f} MB). "
+                    f"O limite é {TAMANHO_MAXIMO_MB} MB."
                 )
         return arquivo

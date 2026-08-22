@@ -166,3 +166,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/accounts/login/'          # usado por @login_required
 LOGIN_REDIRECT_URL = '/'                # após login, voltamos pra home (opção 3)
 LOGOUT_REDIRECT_URL = '/'               # após logout, volta pra home
+
+
+# Segurança
+# https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+
+# Tamanho máximo de um POST que não é arquivo (o limite de upload de arquivo
+# fica em core/forms.TAMANHO_MAXIMO_MB).
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+
+# Endurecimentos que dependem de HTTPS; em desenvolvimento (http://localhost)
+# ligá-los deixaria o site inacessível, então só valem com DEBUG=False.
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    # Confia no cabeçalho do proxy reverso para saber que a origem era HTTPS.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

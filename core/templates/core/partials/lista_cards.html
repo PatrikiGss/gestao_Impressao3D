@@ -21,28 +21,39 @@
                             {{ it.nome }} - {{ it.get_curso_display }}
                         </a>
                     {% elif it.arq_link %}
-                        <a href="{{ it.arq_link }}" target="_blank">Link</a>
+                        {# URL vinda do solicitante: rel evita tabnabbing e vazar o referrer #}
+                        <a href="{{ it.arq_link }}" target="_blank" rel="noopener noreferrer">Link</a>
                     {% else %}
                         -
                     {% endif %}
                 </p>
 
                 <!-- BOTÕES DE AÇÃO -->
+                <!-- Ações que mudam dados vão por POST: como link GET, bastava
+                     conhecer a URL (ou um crawler passar por ela) para alterar
+                     ou apagar o registro, sem token CSRF nenhum. -->
                 <div class="d-flex justify-content-between mt-3">
                     {% if status == "PENDENTE" %}
-                        <a href="{% url 'core:atualizar_status' it.pk 'PRODUCAO' %}" class="btn btn-outline-primary btn-sm">→ Produção</a>
+                        <form method="post" action="{% url 'core:atualizar_status' it.pk 'PRODUCAO' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-primary btn-sm">→ Produção</button>
+                        </form>
                         <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetalhes{{ it.id }}">Detalhes</button>
 
                     {% elif status == "PRODUCAO" %}
-                        <a href="{% url 'core:atualizar_status' it.pk 'CONCLUIDO' %}" class="btn btn-outline-success btn-sm">✓ Finalizar</a>
+                        <form method="post" action="{% url 'core:atualizar_status' it.pk 'CONCLUIDO' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-success btn-sm">✓ Finalizar</button>
+                        </form>
                         <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetalhes{{ it.id }}">Detalhes</button>
 
                     {% elif status == "CONCLUIDO" %}
                         <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetalhes{{ it.id }}">Detalhes</button>
-                        <a href="{% url 'core:excluir' it.pk %}" class="btn btn-outline-danger btn-sm"
-                           onclick="return confirm('Tem certeza que deseja excluir este cadastro?');">
-                           Excluir
-                        </a>
+                        <form method="post" action="{% url 'core:excluir' it.pk %}" class="d-inline"
+                              onsubmit="return confirm('Tem certeza que deseja excluir este cadastro?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Excluir</button>
+                        </form>
                     {% endif %}
                 </div>
             </div>

@@ -140,3 +140,4 @@ gestao_Impressao3D/
 ```
 
 O app `core` concentra o domínio: `Models` é a solicitação de impressão e `HistoricoStatus` é o log de mudanças de status.
+ 

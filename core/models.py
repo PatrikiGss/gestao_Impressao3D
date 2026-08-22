@@ -1,8 +1,16 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.utils import timezone
 import os
 import re
 from django.conf import settings
+
+# A máscara do formulário é só conveniência no navegador; um POST direto passa
+# qualquer coisa. Este validador é o que realmente vale.
+validar_telefone = RegexValidator(
+    regex=r'^\(?\d{2}\)?[\s-]?\d{4,5}-?\d{4}$',
+    message='Informe um telefone válido com DDD. Ex.: (49) 99999-9999',
+)
 
 class CursoChoices(models.TextChoices):
     CIENCIA_DA_COMPUTACAO = "CC", "Ciência da Computação"
@@ -46,9 +54,9 @@ STATUS_CHOICES = [
 class Models(models.Model):
     nome = models.CharField(max_length=50)
     curso = models.CharField(max_length=20, choices=CursoChoices.choices)
-    quant_de_pecas = models.IntegerField()
+    quant_de_pecas = models.IntegerField(validators=[MinValueValidator(1)])
     cor = models.CharField(max_length=20)
-    telefone = models.CharField(max_length=20)
+    telefone = models.CharField(max_length=20, validators=[validar_telefone])
 
     # arquivo ou link (apenas um obrigatório)
     arq_upload = models.FileField(upload_to=rename_uploaded_file, blank=True, null=True)
@@ -58,7 +66,11 @@ class Models(models.Model):
 
     # campos técnicos (opcionais)
     tipo_preenchimento = models.CharField(max_length=50, blank=True, null=True)
-    porcentagem_preenchimento = models.IntegerField(blank=True, null=True)
+    porcentagem_preenchimento = models.IntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
     resolucao = models.CharField(max_length=20, choices=Resolucao.choices, blank=True, null=True)
     qual_impressora = models.CharField(max_length=20, choices=ImpressorasChoice.choices, blank=True, null=True)
     tipo_filamento = models.CharField(max_length=20, choices=TipoFilamento.choices, blank=True, null=True)

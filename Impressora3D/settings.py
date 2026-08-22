@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config, Csv
+from django.core.exceptions import ImproperlyConfigured
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,13 +22,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG")
+# cast=bool é obrigatório: sem ele, DEBUG=False no .env viraria a string
+# "False", que o Python considera verdadeira.
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+# SECURITY WARNING: keep the secret key used in production secret!
+# Em desenvolvimento usamos uma chave descartável para o projeto subir sem
+# configuração. Com DEBUG=False a chave passa a ser obrigatória.
+SECRET_KEY = config('SECRET_KEY', default='')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-chave-de-desenvolvimento-nao-use-em-producao'
+    else:
+        raise ImproperlyConfigured(
+            'SECRET_KEY não definida. Copie o .env.example para .env e gere uma chave com:\n'
+            '  python -c "from django.core.management.utils import get_random_secret_key; '
+            'print(get_random_secret_key())"'
+        )
+
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
 
 # Application definition
@@ -77,16 +91,28 @@ WSGI_APPLICATION = 'Impressora3D.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+# Padrão: SQLite, para o projeto rodar logo após o clone sem instalar nada.
+# Em produção defina DB_ENGINE=postgresql no .env junto das demais DB_*.
+DB_ENGINE = config('DB_ENGINE', default='sqlite3')
+
+if DB_ENGINE == 'sqlite3':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': f'django.db.backends.{DB_ENGINE}',
+            'NAME': config('DB_NAME'),
+            'USER': config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+        }
+    }
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -129,9 +155,8 @@ STATIC_URL = 'static/'
 # Diretório onde os arquivos serão coletados ao rodar collectstatic
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Diretórios adicionais onde o Django procurará arquivos estáticos durante o desenvolvimento
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),]
+# Não há STATICFILES_DIRS: cada app serve seus próprios estáticos a partir da
+# sua pasta static/ (core/static/core/, etc.), via APP_DIRS do staticfiles.
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

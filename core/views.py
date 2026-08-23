@@ -6,10 +6,12 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from .forms import TAMANHO_MAXIMO_MB, ModelsForm
 from .models import STATUS_CHOICES, CursoChoices, HistoricoStatus, Models
+from .utils import destino_seguro
 
 # Fonte única dos status aceitos: derivada das choices do model, para não
 # divergir se um status novo for adicionado lá.
@@ -66,7 +68,11 @@ def lista_models(request):
         pedidos = pedidos.filter(curso=curso)
 
     def por_status(status):
-        return pedidos.filter(status=status).order_by('-created_at')
+        # Pendentes e produção seguem ordem de chegada — é a ordem em que a
+        # fila deve ser atendida. Invertido, quem pediu primeiro afundava no
+        # fim da lista. Concluídos mostram os últimos finalizados no topo.
+        ordem = '-created_at' if status == 'CONCLUIDO' else 'created_at'
+        return pedidos.filter(status=status).order_by(ordem)
 
     # Querystring sem os parâmetros de página, para os links de paginação
     # preservarem a busca e o filtro de curso.
@@ -154,7 +160,8 @@ def excluir(request, pk):
     nome = item.nome
     item.delete()
     messages.success(request, f'Cadastro de {nome} excluído.')
-    return redirect('core:lista_models')
+    # Volta para a mesma aba, página e filtro de onde a ação partiu.
+    return redirect(destino_seguro(request, reverse('core:lista_models')))
 
 
 @login_required
@@ -166,10 +173,11 @@ def atualizar_status(request, pk, novo_status):
 
     item = get_object_or_404(Models, pk=pk)
     status_antigo = item.status
+    volta_para = destino_seguro(request, reverse('core:lista_models'))
 
     # Sem mudança real, não suja o histórico com um registro vazio.
     if status_antigo == novo_status:
-        return redirect('core:lista_models')
+        return redirect(volta_para)
 
     item.status = novo_status
     item.save(update_fields=['status'])
@@ -185,4 +193,4 @@ def atualizar_status(request, pk, novo_status):
         request,
         f'{item.nome}: {ROTULO_STATUS[status_antigo]} → {ROTULO_STATUS[novo_status]}.',
     )
-    return redirect('core:lista_models')
+    return redirect(volta_para)

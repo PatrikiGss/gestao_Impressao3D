@@ -50,6 +50,10 @@ STATUS_CHOICES = [
         ('CONCLUIDO', 'Concluído'),
     ]
 
+# A partir de quantos dias na fila um pedido passa a ser destacado.
+DIAS_PARA_ATENCAO = 3
+DIAS_PARA_URGENCIA = 7
+
 
 class Models(models.Model):
     nome = models.CharField(max_length=50)
@@ -102,6 +106,40 @@ class Models(models.Model):
         if digits.startswith('55'):
             return digits
         return '55' + digits
+
+    def mensagem_whatsapp(self):
+        """Texto já pronto para abrir a conversa no WhatsApp.
+
+        Sem isto o link abre um chat em branco e a equipe redigita a mesma
+        mensagem a cada pedido.
+        """
+        if self.status == 'CONCLUIDO':
+            return (
+                f'Olá {self.nome}! Sua impressão 3D está pronta para retirada '
+                f'no laboratório do IFSC Lages.'
+            )
+        if self.status == 'PRODUCAO':
+            return (
+                f'Olá {self.nome}! Sua impressão 3D entrou em produção. '
+                f'Avisamos assim que estiver pronta.'
+            )
+        return f'Olá {self.nome}! Recebemos sua solicitação de impressão 3D.'
+
+    @property
+    def dias_de_espera(self):
+        """Dias inteiros desde o cadastro."""
+        if not self.created_at:
+            return 0
+        return (timezone.now() - self.created_at).days
+
+    @property
+    def nivel_espera(self):
+        """Quanto o pedido já esperou, para destacar quem está encalhado."""
+        if self.dias_de_espera >= DIAS_PARA_URGENCIA:
+            return 'urgente'
+        if self.dias_de_espera >= DIAS_PARA_ATENCAO:
+            return 'atencao'
+        return 'normal'
 
     def __str__(self):
         return f"{self.nome} - {self.curso}"

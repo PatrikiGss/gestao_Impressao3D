@@ -4,11 +4,28 @@
     <div class="col-12 col-md-6 col-lg-4">
         <div class="card shadow-sm h-100">
             <div class="card-body">
-                <h5 class="card-title">{{ it.nome }}</h5>
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <h5 class="card-title">{{ it.nome }}</h5>
+                    {% comment %}Tempo na fila: a data sozinha não diz nada sem
+                       fazer a conta de cabeça, e é o que define a prioridade.{% endcomment %}
+                    {% if status != "CONCLUIDO" %}
+                    <span class="badge flex-shrink-0
+                        {% if it.nivel_espera == 'urgente' %}bg-danger
+                        {% elif it.nivel_espera == 'atencao' %}bg-warning text-dark
+                        {% else %}bg-secondary{% endif %}">
+                        {% if it.dias_de_espera == 0 %}hoje
+                        {% elif it.dias_de_espera == 1 %}há 1 dia
+                        {% else %}há {{ it.dias_de_espera }} dias{% endif %}
+                    </span>
+                    {% endif %}
+                </div>
                 <p><strong>Curso:</strong> {{ it.get_curso_display }}</p>
                 <p><strong>Telefone:</strong>
                     {% if it.telefone_para_whatsapp %}
-                        <a href="https://wa.me/{{ it.telefone_para_whatsapp }}" target="_blank" rel="noopener" class="text-decoration-none text-success">{{ it.telefone }}</a>
+                        {% comment %}?text= abre a conversa com a mensagem pronta,
+                           em vez de um chat em branco para redigitar.{% endcomment %}
+                        <a href="https://wa.me/{{ it.telefone_para_whatsapp }}?text={{ it.mensagem_whatsapp|urlencode }}"
+                           target="_blank" rel="noopener" class="text-decoration-none text-success">{{ it.telefone }}</a>
                     {% else %}
                         {{ it.telefone }}
                     {% endif %}
@@ -36,23 +53,27 @@
                     {% if status == "PENDENTE" %}
                         <form method="post" action="{% url 'core:atualizar_status' it.pk 'PRODUCAO' %}">
                             {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}#{{ aba }}">
                             <button type="submit" class="btn btn-outline-primary btn-sm">→ Produção</button>
                         </form>
 
                     {% elif status == "PRODUCAO" %}
                         <form method="post" action="{% url 'core:atualizar_status' it.pk 'CONCLUIDO' %}">
                             {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}#{{ aba }}">
                             <button type="submit" class="btn btn-outline-success btn-sm">✓ Finalizar</button>
                         </form>
                         {# Sem esta volta, um clique errado em "Finalizar" era definitivo #}
                         <form method="post" action="{% url 'core:atualizar_status' it.pk 'PENDENTE' %}">
                             {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}#{{ aba }}">
                             <button type="submit" class="btn btn-outline-secondary btn-sm">← Pendente</button>
                         </form>
 
                     {% elif status == "CONCLUIDO" %}
                         <form method="post" action="{% url 'core:atualizar_status' it.pk 'PRODUCAO' %}">
                             {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}#{{ aba }}">
                             <button type="submit" class="btn btn-outline-secondary btn-sm">← Produção</button>
                         </form>
                     {% endif %}
@@ -64,6 +85,7 @@
                         <form method="post" action="{% url 'core:excluir' it.pk %}"
                               onsubmit="return confirm('Tem certeza que deseja excluir este cadastro?');">
                             {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}#{{ aba }}">
                             <button type="submit" class="btn btn-outline-danger btn-sm">Excluir</button>
                         </form>
                     {% endif %}

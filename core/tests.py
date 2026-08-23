@@ -5,10 +5,13 @@ ação destrutiva por GET, status arbitrário e validação que só existia no
 navegador.
 """
 
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from .forms import TAMANHO_MAXIMO_MB, ModelsForm
 from .models import HistoricoStatus, Models
@@ -355,3 +358,136 @@ class PaginaSucessoTest(TestCase):
         self.client.force_login(usuario)
         resposta = self.client.get(reverse('core:sucesso'))
         self.assertContains(resposta, reverse('core:lista_models'))
+
+
+class OrdemDaFilaTest(TestCase):
+    """A fila deve ser atendida por ordem de chegada."""
+
+    def setUp(self):
+        self.usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.client.force_login(self.usuario)
+
+    def criar_em(self, nome, dias_atras, status='PENDENTE'):
+        pedido = criar_pedido(nome=nome, status=status)
+        Models.objects.filter(pk=pedido.pk).update(
+            created_at=timezone.now() - timedelta(days=dias_atras)
+        )
+        return pedido
+
+    def test_pendentes_vem_do_mais_antigo_para_o_mais_novo(self):
+        self.criar_em('Recente', 1)
+        self.criar_em('Antigo', 30)
+        self.criar_em('Meio', 10)
+
+        resposta = self.client.get(reverse('core:lista_models'))
+        self.assertEqual(
+            [p.nome for p in resposta.context['pendentes']],
+            ['Antigo', 'Meio', 'Recente'],
+        )
+
+    def test_concluidos_vem_do_mais_recente_para_o_mais_antigo(self):
+        self.criar_em('Antigo', 30, status='CONCLUIDO')
+        self.criar_em('Recente', 1, status='CONCLUIDO')
+
+        resposta = self.client.get(reverse('core:lista_models'))
+        self.assertEqual(
+            [p.nome for p in resposta.context['concluidos']],
+            ['Recente', 'Antigo'],
+        )
+
+
+class TempoDeEsperaTest(TestCase):
+    def pedido_com_idade(self, dias):
+        pedido = criar_pedido()
+        Models.objects.filter(pk=pedido.pk).update(
+            created_at=timezone.now() - timedelta(days=dias)
+        )
+        return Models.objects.get(pk=pedido.pk)
+
+    def test_conta_os_dias_de_espera(self):
+        self.assertEqual(self.pedido_com_idade(0).dias_de_espera, 0)
+        self.assertEqual(self.pedido_com_idade(5).dias_de_espera, 5)
+
+    def test_niveis_de_espera(self):
+        self.assertEqual(self.pedido_com_idade(0).nivel_espera, 'normal')
+        self.assertEqual(self.pedido_com_idade(2).nivel_espera, 'normal')
+        self.assertEqual(self.pedido_com_idade(3).nivel_espera, 'atencao')
+        self.assertEqual(self.pedido_com_idade(6).nivel_espera, 'atencao')
+        self.assertEqual(self.pedido_com_idade(7).nivel_espera, 'urgente')
+        self.assertEqual(self.pedido_com_idade(60).nivel_espera, 'urgente')
+
+    def test_badge_aparece_na_lista(self):
+        usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.client.force_login(usuario)
+        self.pedido_com_idade(9)
+        resposta = self.client.get(reverse('core:lista_models'))
+        self.assertContains(resposta, 'há 9 dias')
+        self.assertContains(resposta, 'bg-danger')
+
+
+class MensagemWhatsappTest(TestCase):
+    def test_texto_muda_conforme_o_status(self):
+        pedido = criar_pedido(nome='Ana')
+        self.assertIn('Recebemos sua solicitação', pedido.mensagem_whatsapp())
+
+        pedido.status = 'PRODUCAO'
+        self.assertIn('entrou em produção', pedido.mensagem_whatsapp())
+
+        pedido.status = 'CONCLUIDO'
+        self.assertIn('pronta para retirada', pedido.mensagem_whatsapp())
+
+    def test_link_da_lista_leva_a_mensagem_pronta(self):
+        """Antes o link abria uma conversa em branco."""
+        usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.client.force_login(usuario)
+        criar_pedido(nome='Ana')
+        resposta = self.client.get(reverse('core:lista_models'))
+        self.assertContains(resposta, 'wa.me/5549999999999?text=')
+        self.assertContains(resposta, 'Ol%C3%A1%20Ana')
+
+
+class RetornoAposAcaoTest(TestCase):
+    """As ações devem devolver o usuário para a aba, página e filtro de origem."""
+
+    def setUp(self):
+        self.usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.client.force_login(self.usuario)
+        self.pedido = criar_pedido(status='CONCLUIDO')
+        self.origem = '/lista/?q=fulano&conc=2#concluidos'
+
+    def test_mudanca_de_status_volta_para_a_origem(self):
+        resposta = self.client.post(
+            reverse('core:atualizar_status', args=[self.pedido.pk, 'PRODUCAO']),
+            {'next': self.origem},
+        )
+        self.assertEqual(resposta['Location'], self.origem)
+
+    def test_exclusao_volta_para_a_origem(self):
+        resposta = self.client.post(
+            reverse('core:excluir', args=[self.pedido.pk]), {'next': self.origem}
+        )
+        self.assertEqual(resposta['Location'], self.origem)
+
+    def test_status_repetido_tambem_volta_para_a_origem(self):
+        resposta = self.client.post(
+            reverse('core:atualizar_status', args=[self.pedido.pk, 'CONCLUIDO']),
+            {'next': self.origem},
+        )
+        self.assertEqual(resposta['Location'], self.origem)
+
+    def test_next_para_fora_do_site_e_ignorado(self):
+        resposta = self.client.post(
+            reverse('core:atualizar_status', args=[self.pedido.pk, 'PRODUCAO']),
+            {'next': 'https://site-malicioso.example/'},
+        )
+        self.assertEqual(resposta['Location'], reverse('core:lista_models'))
+
+    def test_sem_next_cai_na_lista(self):
+        resposta = self.client.post(
+            reverse('core:atualizar_status', args=[self.pedido.pk, 'PRODUCAO'])
+        )
+        self.assertEqual(resposta['Location'], reverse('core:lista_models'))
+
+    def test_formulario_da_lista_carrega_o_next_com_aba_e_filtro(self):
+        resposta = self.client.get(reverse('core:lista_models'), {'q': 'fulano'})
+        self.assertContains(resposta, 'name="next" value="/lista/?q=fulano#concluidos"')

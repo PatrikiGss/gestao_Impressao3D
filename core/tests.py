@@ -491,3 +491,91 @@ class RetornoAposAcaoTest(TestCase):
     def test_formulario_da_lista_carrega_o_next_com_aba_e_filtro(self):
         resposta = self.client.get(reverse('core:lista_models'), {'q': 'fulano'})
         self.assertContains(resposta, 'name="next" value="/lista/?q=fulano#concluidos"')
+
+
+class ExportacaoCsvTest(TestCase):
+    def setUp(self):
+        self.usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.url = reverse('core:exportar_csv')
+
+    def baixar(self, **filtros):
+        self.client.force_login(self.usuario)
+        resposta = self.client.get(self.url, filtros)
+        self.assertEqual(resposta.status_code, 200)
+        return resposta
+
+    def linhas(self, resposta):
+        texto = resposta.content.decode('utf-8-sig')
+        return [l for l in texto.splitlines() if l.strip()]
+
+    def test_exige_login(self):
+        resposta = self.client.get(self.url)
+        self.assertEqual(resposta.status_code, 302)
+        self.assertIn('/accounts/login/', resposta['Location'])
+
+    def test_baixa_como_anexo_com_data_no_nome(self):
+        resposta = self.baixar()
+        self.assertIn('attachment;', resposta['Content-Disposition'])
+        self.assertIn('.csv', resposta['Content-Disposition'])
+
+    def test_comeca_com_bom_para_o_excel_nao_quebrar_acento(self):
+        """Sem o BOM o Excel em português lê o arquivo como latin-1."""
+        self.assertTrue(self.baixar().content.startswith(b'\xef\xbb\xbf'))
+
+    def test_usa_ponto_e_virgula_como_separador(self):
+        criar_pedido(nome='Ana')
+        cabecalho = self.linhas(self.baixar())[0]
+        self.assertIn(';', cabecalho)
+        self.assertIn('Nome', cabecalho.split(';'))
+
+    def test_exporta_os_pedidos(self):
+        criar_pedido(nome='Ana Souza', curso='CC')
+        criar_pedido(nome='Bruno Lima', curso='ENG-MEC')
+
+        linhas = self.linhas(self.baixar())
+        self.assertEqual(len(linhas), 3)  # cabeçalho + 2
+        conteudo = '\n'.join(linhas)
+        self.assertIn('Ana Souza', conteudo)
+        self.assertIn('Bruno Lima', conteudo)
+
+    def test_mostra_rotulo_e_nao_o_codigo_do_banco(self):
+        criar_pedido(nome='Ana', curso='ENG-MEC', resolucao='MEDIO')
+        conteudo = '\n'.join(self.linhas(self.baixar()))
+        self.assertIn('Engenharia Mecânica', conteudo)
+        self.assertIn('Médio', conteudo)
+        self.assertNotIn('ENG-MEC', conteudo)
+
+    def test_respeita_a_busca(self):
+        criar_pedido(nome='Ana Souza')
+        criar_pedido(nome='Bruno Lima')
+
+        conteudo = '\n'.join(self.linhas(self.baixar(q='ana')))
+        self.assertIn('Ana Souza', conteudo)
+        self.assertNotIn('Bruno Lima', conteudo)
+
+    def test_respeita_o_filtro_de_curso(self):
+        criar_pedido(nome='Ana Souza', curso='CC')
+        criar_pedido(nome='Bruno Lima', curso='ENG-MEC')
+
+        conteudo = '\n'.join(self.linhas(self.baixar(curso='ENG-MEC')))
+        self.assertIn('Bruno Lima', conteudo)
+        self.assertNotIn('Ana Souza', conteudo)
+
+    def test_inclui_os_tres_status(self):
+        criar_pedido(nome='Pendente Um', status='PENDENTE')
+        criar_pedido(nome='Producao Um', status='PRODUCAO')
+        criar_pedido(nome='Concluido Um', status='CONCLUIDO')
+
+        conteudo = '\n'.join(self.linhas(self.baixar()))
+        for esperado in ('Pendente', 'Em produção', 'Concluído'):
+            self.assertIn(esperado, conteudo)
+
+    def test_campos_opcionais_vazios_nao_viram_none(self):
+        criar_pedido(nome='Ana', tipo_preenchimento=None, porcentagem_preenchimento=None)
+        conteudo = '\n'.join(self.linhas(self.baixar()))
+        self.assertNotIn('None', conteudo)
+
+    def test_botao_aparece_na_lista_com_os_filtros(self):
+        self.client.force_login(self.usuario)
+        resposta = self.client.get(reverse('core:lista_models'), {'q': 'ana'})
+        self.assertContains(resposta, f'{self.url}?q=ana')

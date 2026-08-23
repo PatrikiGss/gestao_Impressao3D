@@ -1,12 +1,14 @@
+import csv
 import os
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .forms import TAMANHO_MAXIMO_MB, ModelsForm
@@ -53,19 +55,30 @@ def _paginar(request, queryset, parametro):
     return Paginator(queryset, PEDIDOS_POR_PAGINA).get_page(request.GET.get(parametro))
 
 
-@login_required
-def lista_models(request):
+def _pedidos_filtrados(request):
+    """Aplica a busca e o filtro de curso vindos da querystring.
+
+    Compartilhado pela lista e pela exportação em CSV, para que o arquivo
+    exportado seja exatamente o que está na tela.
+    """
     busca = request.GET.get('q', '').strip()
     curso = request.GET.get('curso', '').strip()
 
-    pedidos = Models.objects.prefetch_related('historico_status__usuario')
-
+    pedidos = Models.objects.all()
     if busca:
         pedidos = pedidos.filter(
             Q(nome__icontains=busca) | Q(cor__icontains=busca) | Q(telefone__icontains=busca)
         )
     if curso:
         pedidos = pedidos.filter(curso=curso)
+
+    return pedidos, busca, curso
+
+
+@login_required
+def lista_models(request):
+    pedidos, busca, curso = _pedidos_filtrados(request)
+    pedidos = pedidos.prefetch_related('historico_status__usuario')
 
     def por_status(status):
         # Pendentes e produção seguem ordem de chegada — é a ordem em que a
@@ -90,6 +103,56 @@ def lista_models(request):
         'filtros': filtros.urlencode(),
         'tem_filtro': bool(busca or curso),
     })
+
+
+@login_required
+def exportar_csv(request):
+    """Baixa em CSV os pedidos que estão na tela, respeitando busca e filtro."""
+    pedidos, _, _ = _pedidos_filtrados(request)
+
+    resposta = HttpResponse(content_type='text/csv; charset=utf-8')
+    nome_arquivo = f'impressoes-{timezone.localdate():%Y-%m-%d}.csv'
+    resposta['Content-Disposition'] = f'attachment; filename="{nome_arquivo}"'
+
+    # BOM: sem ele o Excel em português lê o arquivo como latin-1 e todo
+    # acento aparece quebrado.
+    resposta.write('﻿')
+
+    # Separador ';': é o que o Excel espera no locale pt-BR. Com ',' ele joga
+    # a linha inteira numa coluna só.
+    escritor = csv.writer(resposta, delimiter=';')
+    escritor.writerow([
+        'Nº', 'Nome', 'Curso', 'Telefone', 'Status', 'Data de envio',
+        'Dias de espera', 'Quantidade de peças', 'Cor', 'Tipo de preenchimento',
+        'Porcentagem de preenchimento', 'Resolução', 'Impressora', 'Filamento',
+        'Arquivo ou link',
+    ])
+
+    for pedido in pedidos.order_by('created_at'):
+        if pedido.arq_upload:
+            arquivo = pedido.arq_upload.name
+        else:
+            arquivo = pedido.arq_link or ''
+
+        escritor.writerow([
+            pedido.pk,
+            pedido.nome,
+            pedido.get_curso_display(),
+            pedido.telefone,
+            pedido.get_status_display(),
+            timezone.localtime(pedido.data_envio).strftime('%d/%m/%Y %H:%M'),
+            pedido.dias_de_espera,
+            pedido.quant_de_pecas,
+            pedido.cor,
+            pedido.tipo_preenchimento or '',
+            pedido.porcentagem_preenchimento if pedido.porcentagem_preenchimento is not None else '',
+            pedido.get_resolucao_display() or '',
+            pedido.get_qual_impressora_display() or '',
+            pedido.get_tipo_filamento_display() or '',
+            arquivo,
+        ])
+
+    return resposta
 
 
 @login_required

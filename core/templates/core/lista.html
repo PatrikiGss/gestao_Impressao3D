@@ -34,6 +34,15 @@
         </div>
     </form>
 
+    {% comment %}O CSV leva junto os filtros ativos: exporta o que está na
+       tela, não a tabela inteira.{% endcomment %}
+    <div class="mb-4">
+        <a href="{% url 'core:exportar_csv' %}{% if filtros %}?{{ filtros }}{% endif %}"
+           class="btn btn-outline-secondary btn-sm">
+            ⭳ Exportar CSV{% if tem_filtro %} (com os filtros){% endif %}
+        </a>
+    </div>
+
     <!-- Abas Bootstrap -->
     <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">

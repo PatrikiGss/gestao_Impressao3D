@@ -8,6 +8,7 @@ urlpatterns = [
     path('cadastro/', views.cadastro, name='cadastro'),
     path('sucesso/', views.sucesso, name='sucesso'),
     path('lista/', views.lista_models, name='lista_models'),
+    path('lista/csv/', views.exportar_csv, name='exportar_csv'),
     path('editar/<int:pk>/', views.editar, name='editar'),
     path('download/<int:pk>/', views.download_arquivo, name='download_arquivo'),
     path('excluir/<int:pk>/', views.excluir, name='excluir'),

@@ -1,110 +1,50 @@
 # Gestão de Impressoras 3D — IFSC Campus Lages
 
-Sistema web para gerenciar as solicitações de impressão 3D do laboratório.
+[![Testes](https://github.com/PatrikiGss/gestao_Impressao3D/actions/workflows/testes.yml/badge.svg)](https://github.com/PatrikiGss/gestao_Impressao3D/actions/workflows/testes.yml)
 
-- **Aluno** preenche um formulário público com seus dados, o arquivo do modelo (ou um link) e, opcionalmente, os parâmetros técnicos da impressão.
-- **Administrador** faz login e acompanha as solicitações em três abas — *Pendentes*, *Em produção* e *Concluídos* —, baixa o arquivo enviado, entra em contato pelo WhatsApp e move o pedido entre os status.
-- Toda mudança de status fica registrada num **histórico auditável** (quem mudou, de qual status para qual, quando), exportável em PDF pelo admin do Django.
+Sistema para organizar a fila de impressão 3D do laboratório.
 
-Stack: Django 5.2 · Bootstrap 5 · SQLite (dev) / PostgreSQL (produção).
+O aluno preenche um formulário público com os dados dele e o arquivo do modelo (ou um link, se preferir). A equipe do laboratório faz login, vê os pedidos separados em Pendentes, Em produção e Concluídos, baixa o arquivo, chama o aluno no WhatsApp e vai movendo o pedido entre os status. Cada mudança fica registrada com autor e data, e dá pra exportar esse histórico em PDF pelo admin do Django.
 
----
+Feito em Django 5.2 com Bootstrap 5, rodando em SQLite no desenvolvimento e PostgreSQL em produção.
 
-## Rodando localmente
+## Rodando
 
-Pré-requisito: **Python 3.12**.
-
-### 1. Clonar e entrar na pasta
+Precisa de Python 3.12.
 
 ```bash
-git clone <url-do-repo> && cd gestao_Impressao3D
-```
-
-### 2. Criar e ativar o ambiente virtual
-
-Windows (PowerShell):
-
-```bash
-python -m venv venv; .\venv\Scripts\Activate.ps1
-```
-
-Linux / macOS:
-
-```bash
-python3 -m venv venv && source venv/bin/activate
-```
-
-### 3. Instalar as dependências
-
-```bash
+python -m venv venv
+venv\Scripts\activate          # Linux/macOS: source venv/bin/activate
 pip install -r requirements.txt
-```
-
-### 4. Configurar o ambiente
-
-```bash
-copy .env.example .env
-```
-
-No Linux/macOS use `cp .env.example .env`.
-
-Os valores padrão do `.env.example` já bastam para desenvolvimento: `DEBUG=True` e `DB_ENGINE=sqlite3`. Nesse modo o projeto usa uma `SECRET_KEY` descartável e cria um `db.sqlite3` na raiz — não é preciso instalar banco nenhum.
-
-### 5. Criar o banco
-
-```bash
+copy .env.example .env         # Linux/macOS: cp .env.example .env
 python manage.py migrate
-```
-
-### 6. Criar o usuário administrador
-
-```bash
 python manage.py createsuperuser
-```
-
-### 7. Subir o servidor
-
-```bash
 python manage.py runserver
 ```
 
-| Rota | O quê | Acesso |
-|---|---|---|
-| `/` | Home | Público |
-| `/cadastro/` | Formulário de solicitação | Público |
-| `/lista/` | Painel de gerenciamento | Requer login |
-| `/admin/` | Admin do Django e histórico | Requer login |
-| `/accounts/login/` | Login | Público |
+Os valores que já vêm no `.env.example` bastam pra desenvolver: `DEBUG=True` e `DB_ENGINE=sqlite3`. Nesse modo o projeto usa uma SECRET_KEY descartável e cria o `db.sqlite3` na raiz, então não precisa instalar banco nenhum.
 
----
+A home e o formulário de cadastro são públicos. A lista, a edição e o admin exigem login.
 
-## Variáveis de ambiente
+Os testes rodam com `python manage.py test`. Eles também rodam sozinhos a cada push, junto com uma conferência de migrations pendentes e o `check --deploy` — está tudo em `.github/workflows/testes.yml`.
 
-Todas ficam no `.env` (que **não** é versionado). O `.env.example` é o modelo.
+As ferramentas de lint ficam separadas em `requirements-dev.txt`, que não é instalado em produção nem no CI.
 
-| Variável | Padrão | Descrição |
-|---|---|---|
-| `DEBUG` | `False` | `True` em desenvolvimento. Nunca `True` em produção. |
-| `SECRET_KEY` | *(vazio)* | Obrigatória quando `DEBUG=False`. Com `DEBUG=True` o projeto usa uma chave descartável. |
-| `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Domínios permitidos, separados por vírgula. |
-| `DB_ENGINE` | `sqlite3` | `sqlite3` ou `postgresql`. |
-| `DB_NAME` | — | Só lida se `DB_ENGINE` não for `sqlite3`. |
-| `DB_USER` | — | idem |
-| `DB_PASSWORD` | — | idem |
-| `DB_HOST` | `localhost` | idem |
-| `DB_PORT` | `5432` | idem |
+## Configuração
 
-Para gerar uma `SECRET_KEY`:
+Tudo fica no `.env`, que não vai pro git — o `.env.example` é o modelo.
+
+`DEBUG` liga o modo de desenvolvimento. Com ele desligado, a `SECRET_KEY` passa a ser obrigatória e o `ALLOWED_HOSTS` precisa listar o domínio, senão toda requisição vira 400. Pra gerar uma chave:
 
 ```bash
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
----
+`DB_ENGINE` aceita `sqlite3` (padrão) ou `postgresql`. Usando Postgres, preencha também `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST` e `DB_PORT`; no SQLite essas variáveis são ignoradas.
 
 ## Produção
 
-Ajustes mínimos no `.env`:
+O mínimo no `.env`:
 
 ```
 DEBUG=False
@@ -113,31 +53,15 @@ ALLOWED_HOSTS=seu.dominio.br
 DB_ENGINE=postgresql
 DB_NAME=impressao3d
 DB_USER=postgres
-DB_PASSWORD=<senha>
+DB_PASSWORD=
 DB_HOST=localhost
 DB_PORT=5432
 ```
 
-Depois:
+Depois é rodar `migrate` e `collectstatic --noinput`.
 
-```bash
-python manage.py migrate && python manage.py collectstatic --noinput
-```
+Com `DEBUG=False` o Django para de servir `MEDIA_ROOT` e `STATIC_ROOT` — quem faz isso passa a ser o nginx (ou o WhiteNoise). Vale também limitar o tamanho do upload lá no servidor web, com `client_max_body_size`: o limite de 25 MB que existe no formulário só é conferido depois do arquivo chegar inteiro.
 
-Com `DEBUG=False` o Django deixa de servir os arquivos de `MEDIA_ROOT` e de `STATIC_ROOT` — isso passa a ser responsabilidade do servidor web (nginx, Apache) ou do WhiteNoise.
+## Organização
 
----
-
-## Estrutura
-
-```
-gestao_Impressao3D/
-├── Impressora3D/       # settings, urls e wsgi do projeto
-├── core/               # solicitações de impressão: models, form, lista, histórico
-├── autenticacao/       # login e logout
-├── staticfiles/        # saída do collectstatic
-└── manage.py
-```
-
-O app `core` concentra o domínio: `Models` é a solicitação de impressão e `HistoricoStatus` é o log de mudanças de status.
- 
+`core` é onde está o domínio — o model `Models` é a solicitação de impressão e `HistoricoStatus` é o log de mudanças de status. `autenticacao` cuida só de login e logout. As configurações ficam em `Impressora3D/settings.py`.

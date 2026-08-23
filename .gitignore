@@ -1,32 +1,33 @@
 # Ambiente e configs
 .env
 *.env
+!.env.example
+
+# Python
 __pycache__/
 *.py[cod]
-*.DS_Store
-
-# Banco local
-db.sqlite3
-
-# Mídias e uploads
-/media/
-/arquivos/
-/uploads/
-
-# Migrations compiladas
-*/migrations/__pycache__/
-*/migrations/*.pyc
 
 # Ambiente virtual
 venv/
 env/
-venv
+
+# Banco local
+db.sqlite3
+
+# Mídias e uploads dos solicitantes
+/media/
+/arquivos/
+/uploads/
+
+# Saída do collectstatic: gerada no deploy, não se versiona
+/staticfiles/
+
 # Arquivos temporários
 *.log
 *.pot
-*.py~ 
 *.swp
 *.swo
+.DS_Store
 
 # Config do editor
 .vscode/

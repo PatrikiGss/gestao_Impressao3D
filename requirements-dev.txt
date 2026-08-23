@@ -1,0 +1,7 @@
+# Ferramentas de desenvolvimento. Instale com:
+#   pip install -r requirements-dev.txt
+
+-r requirements.txt
+
+pylint==3.3.8
+pylint-django==2.6.1

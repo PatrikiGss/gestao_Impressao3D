@@ -1,0 +1,36 @@
+name: Testes
+
+on: [push, pull_request]
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+
+    env:
+      # Em DEBUG=True o projeto usa a chave descartável de desenvolvimento e o
+      # SQLite, então o CI não precisa de banco nem de segredo configurado.
+      DEBUG: 'True'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Conferir se falta alguma migration
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Rodar os testes
+        run: python manage.py test --verbosity 2
+
+      - name: Checagem de segurança para produção
+        env:
+          DEBUG: 'False'
+          ALLOWED_HOSTS: exemplo.br
+          SECRET_KEY: chave-descartavel-so-do-ci-nao-usar-em-lugar-nenhum-1234567890
+        run: python manage.py check --deploy --fail-level WARNING

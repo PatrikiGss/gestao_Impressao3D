@@ -77,8 +77,15 @@ class Models(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Não editável no formulário: só muda pela view atualizar_status, que
+    # registra cada troca em HistoricoStatus.
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='PENDENTE',
+        editable=False,
+    )
 
-    # --- add this method ---
     def telefone_para_whatsapp(self):
         """
         Retorna o telefone formatado para usar no link wa.me:
@@ -92,20 +99,10 @@ class Models(models.Model):
         digits = re.sub(r'\D', '', self.telefone)  # remove tudo que não for dígito
         if not digits:
             return ''
-        # remove zeros à esquerda desnecessários? aqui mantemos simples:
         if digits.startswith('55'):
             return digits
-        # evita números muito curtos (ex.: apenas 9)
         return '55' + digits
-    
-        # Novo campo
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='PENDENTE',
-        editable=False 
-    )
-    
+
     def __str__(self):
         return f"{self.nome} - {self.curso}"
 

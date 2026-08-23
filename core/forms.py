@@ -12,7 +12,8 @@ TAMANHO_MAXIMO_MB = 25
 class ModelsForm(forms.ModelForm):
     class Meta:
         model = Models
-        exclude = ['data_envio']  # não aparece no formulário
+        # status e created_at não são editáveis, então já ficam de fora.
+        fields = '__all__'
 
     def clean(self):
         cleaned_data = super().clean()

@@ -33,7 +33,11 @@ def cadastro(request):
     if request.method == "POST":
         form = ModelsForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            pedido = form.save()
+            # Guardado na sessão em vez de ir na URL: assim a tela de sucesso
+            # não pode ser percorrida por terceiros (/sucesso/1/, /sucesso/2/…)
+            # para descobrir o nome de quem cadastrou.
+            request.session['ultimo_pedido'] = pedido.pk
             return redirect('core:sucesso')
         # se inválido, renderiza com errors (status 200) — template mostrará os erros
     else:
@@ -46,7 +50,10 @@ def cadastro(request):
 
 
 def sucesso(request):
-    return render(request, 'core/sucesso.html')
+    # Só quem acabou de cadastrar tem o número na sessão; quem abre a página
+    # direto vê a mensagem sem o número.
+    pedido = Models.objects.filter(pk=request.session.get('ultimo_pedido')).first()
+    return render(request, 'core/sucesso.html', {'pedido': pedido})
 
 
 def _paginar(request, queryset, parametro):
@@ -140,7 +147,7 @@ def exportar_csv(request):
             pedido.get_curso_display(),
             pedido.telefone,
             pedido.get_status_display(),
-            timezone.localtime(pedido.data_envio).strftime('%d/%m/%Y %H:%M'),
+            timezone.localtime(pedido.created_at).strftime('%d/%m/%Y %H:%M'),
             pedido.dias_de_espera,
             pedido.quant_de_pecas,
             pedido.cor,
@@ -163,13 +170,23 @@ def editar(request, pk):
     cadastro e pedindo para o solicitante preencher tudo de novo.
     """
     item = get_object_or_404(Models, pk=pk)
+    volta_para = destino_seguro(request, reverse('core:lista_models'))
+
+    # Capturado antes do form tocar na instância: depois do save() o campo já
+    # aponta para o arquivo novo e o antigo ficaria órfão no disco.
+    arquivo_antigo = item.arq_upload.name if item.arq_upload else None
 
     if request.method == 'POST':
         form = ModelsForm(request.POST, request.FILES, instance=item)
         if form.is_valid():
-            form.save()
-            messages.success(request, f'Cadastro de {item.nome} atualizado.')
-            return redirect('core:lista_models')
+            pedido = form.save()
+
+            arquivo_novo = pedido.arq_upload.name if pedido.arq_upload else None
+            if arquivo_antigo and arquivo_antigo != arquivo_novo:
+                pedido.arq_upload.storage.delete(arquivo_antigo)
+
+            messages.success(request, f'Cadastro de {pedido.nome} atualizado.')
+            return redirect(volta_para)
         messages.error(request, 'Corrija os campos destacados abaixo.')
     else:
         form = ModelsForm(instance=item)
@@ -178,6 +195,7 @@ def editar(request, pk):
         'form': form,
         'item': item,
         'tamanho_maximo_mb': TAMANHO_MAXIMO_MB,
+        'next': volta_para,
     })
 
 

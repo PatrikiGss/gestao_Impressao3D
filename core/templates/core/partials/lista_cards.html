@@ -30,7 +30,7 @@
                         {{ it.telefone }}
                     {% endif %}
                 </p>
-                <p><strong>Data:</strong> {{ it.data_envio|date:"d/m/Y H:i" }}</p>
+                <p><strong>Data:</strong> {{ it.created_at|date:"d/m/Y H:i" }}</p>
                 <p>
                     <strong>Arquivo / Link:</strong>
                     {% if it.arq_upload %}
@@ -79,7 +79,13 @@
                     {% endif %}
 
                     <button class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalDetalhes{{ it.id }}">Detalhes</button>
-                    <a href="{% url 'core:editar' it.pk %}" class="btn btn-outline-warning btn-sm">Editar</a>
+                    {% comment %}Editar é um link GET, então o destino de volta
+                       vai na querystring — codificado, para o # da aba não ser
+                       lido como fragmento desta URL.{% endcomment %}
+                    {% with destino=request.get_full_path|add:"#"|add:aba %}
+                    <a href="{% url 'core:editar' it.pk %}?next={{ destino|urlencode }}"
+                       class="btn btn-outline-warning btn-sm">Editar</a>
+                    {% endwith %}
 
                     {% if status == "CONCLUIDO" %}
                         <form method="post" action="{% url 'core:excluir' it.pk %}"

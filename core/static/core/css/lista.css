@@ -2,13 +2,13 @@
     max-width: 1000px;
     margin: 3rem auto;
     padding: 2rem;
-    background-color: whitesmoke;
+    background-color: var(--fundo-caixa);
     border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: var(--sombra-caixa);
 }
 
 .lista-box h1 {
-    color: #343a40;
+    color: var(--cor-titulo);
     font-weight: 700;
 }
 
@@ -33,29 +33,29 @@
 
 /* Botão Excluir - Vermelho */
 .btn-outline-danger {
-    color: #dc3545;
-    border-color: #dc3545;
+    color: var(--vermelho);
+    border-color: var(--vermelho);
 }
 .btn-outline-danger:hover {
     color: #fff;
-    background-color: #dc3545;
-    border-color: #dc3545;
+    background-color: var(--vermelho);
+    border-color: var(--vermelho);
 }
 
 /* Botão Detalhes - Verde IFSC */
 .btn-outline-success {
-    color: #007E3A;
-    border-color: #007E3A;
+    color: var(--verde-ifsc);
+    border-color: var(--verde-ifsc);
 }
 .btn-outline-success:hover {
     color: #fff;
-    background-color: #007E3A;
-    border-color: #007E3A;
+    background-color: var(--verde-ifsc);
+    border-color: var(--verde-ifsc);
 }
 
 /* Modal */
 .modal-header {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--borda-suave);
 }
 
 .modal-body {

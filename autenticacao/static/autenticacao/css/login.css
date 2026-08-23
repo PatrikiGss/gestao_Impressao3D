@@ -1,5 +1,5 @@
 body {
-    background-color: #e9ecef; /* fundo suave */
+    background-color: var(--fundo-pagina);
 }
 
 /* Ajuste fino para altura e espaçamento */
@@ -9,21 +9,21 @@ body {
 
 /* Efeito suave nos inputs */
 .form-control:focus {
-    border-color: #6c757d;
+    border-color: var(--cor-texto-suave);
     box-shadow: 0 0 0 0.15rem rgba(108,117,125,0.25);
 }
 
 /* Botão ENTRAR - verde IFSC */
 .btn-outline-success {
     background-color: transparent;
-    color: #007E3A;
-    border: 1px solid #007E3A;
+    color: var(--verde-ifsc);
+    border: 1px solid var(--verde-ifsc);
     transition: all 0.25s ease-in-out;
 }
 
 .btn-outline-success:hover {
-    background-color: #007E3A;
+    background-color: var(--verde-ifsc);
     color: #fff;
-    border-color: #007E3A;
+    border-color: var(--verde-ifsc);
     transform: translateY(-1px);
 }

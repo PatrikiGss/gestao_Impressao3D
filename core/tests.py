@@ -5,11 +5,14 @@ ação destrutiva por GET, status arbitrário e validação que só existia no
 navegador.
 """
 
+import shutil
+import tempfile
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.contrib.staticfiles import finders
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -579,3 +582,178 @@ class ExportacaoCsvTest(TestCase):
         self.client.force_login(self.usuario)
         resposta = self.client.get(reverse('core:lista_models'), {'q': 'ana'})
         self.assertContains(resposta, f'{self.url}?q=ana')
+
+
+class NumeroDoPedidoTest(TestCase):
+    """O solicitante precisa sair com algo que identifique o pedido dele."""
+
+    def dados(self):
+        return {
+            'nome': 'Ana Souza',
+            'curso': 'CC',
+            'quant_de_pecas': 1,
+            'cor': 'azul',
+            'telefone': '(49) 99999-9999',
+            'arq_link': 'https://exemplo.br/peca.stl',
+        }
+
+    def test_sucesso_mostra_o_numero_apos_cadastrar(self):
+        self.client.post(reverse('core:cadastro'), self.dados())
+        pedido = Models.objects.get(nome='Ana Souza')
+
+        resposta = self.client.get(reverse('core:sucesso'))
+        self.assertContains(resposta, f'#{pedido.pk}')
+        self.assertContains(resposta, 'Guarde este número')
+
+    def test_quem_abre_a_pagina_direto_nao_ve_numero(self):
+        resposta = self.client.get(reverse('core:sucesso'))
+        self.assertEqual(resposta.status_code, 200)
+        self.assertNotContains(resposta, 'Guarde este número')
+
+    def test_numero_nao_vai_na_url(self):
+        """Na URL, daria para percorrer /sucesso/1/, /sucesso/2/… e colher nomes."""
+        resposta = self.client.post(reverse('core:cadastro'), self.dados())
+        self.assertEqual(resposta['Location'], reverse('core:sucesso'))
+
+
+class ArquivoOrfaoTest(TestCase):
+    """Trocar o arquivo na edição não pode deixar o antigo no disco."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.media = tempfile.mkdtemp()
+        cls._override = override_settings(MEDIA_ROOT=cls.media)
+        cls._override.enable()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._override.disable()
+        shutil.rmtree(cls.media, ignore_errors=True)
+        super().tearDownClass()
+
+    def setUp(self):
+        self.usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.client.force_login(self.usuario)
+
+    def stl(self, nome, conteudo):
+        return SimpleUploadedFile(nome, conteudo, content_type='application/octet-stream')
+
+    def dados(self, **extras):
+        base = {
+            'nome': 'Ana Souza',
+            'curso': 'CC',
+            'quant_de_pecas': 1,
+            'cor': 'azul',
+            'telefone': '(49) 99999-9999',
+        }
+        base.update(extras)
+        return base
+
+    def test_arquivo_antigo_e_apagado_ao_subir_outro(self):
+        self.client.post(
+            reverse('core:cadastro'),
+            {**self.dados(), 'arq_upload': self.stl('primeiro.stl', b'solid um')},
+        )
+        pedido = Models.objects.get(nome='Ana Souza')
+        antigo = pedido.arq_upload.name
+        self.assertTrue(pedido.arq_upload.storage.exists(antigo))
+
+        self.client.post(
+            reverse('core:editar', args=[pedido.pk]),
+            {**self.dados(), 'arq_upload': self.stl('segundo.stl', b'solid dois')},
+        )
+        pedido.refresh_from_db()
+
+        self.assertNotEqual(pedido.arq_upload.name, antigo)
+        self.assertFalse(pedido.arq_upload.storage.exists(antigo))
+        self.assertTrue(pedido.arq_upload.storage.exists(pedido.arq_upload.name))
+
+    def test_editar_sem_trocar_arquivo_mantem_o_atual(self):
+        self.client.post(
+            reverse('core:cadastro'),
+            {**self.dados(), 'arq_upload': self.stl('unico.stl', b'solid um')},
+        )
+        pedido = Models.objects.get(nome='Ana Souza')
+        arquivo = pedido.arq_upload.name
+
+        self.client.post(reverse('core:editar', args=[pedido.pk]), self.dados(cor='verde'))
+        pedido.refresh_from_db()
+
+        self.assertEqual(pedido.arq_upload.name, arquivo)
+        self.assertTrue(pedido.arq_upload.storage.exists(arquivo))
+        self.assertEqual(pedido.cor, 'verde')
+
+
+class RetornoDaEdicaoTest(TestCase):
+    def setUp(self):
+        self.usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+        self.client.force_login(self.usuario)
+        self.pedido = criar_pedido(nome='Ana Souza')
+        self.origem = '/lista/?q=ana#pendentes'
+
+    def dados(self, **extras):
+        base = {
+            'nome': 'Ana Souza',
+            'curso': 'CC',
+            'quant_de_pecas': 1,
+            'cor': 'azul',
+            'telefone': '(49) 99999-9999',
+            'arq_link': 'https://exemplo.br/peca.stl',
+        }
+        base.update(extras)
+        return base
+
+    def test_link_editar_da_lista_carrega_o_destino_de_volta(self):
+        """O ? e o # precisam sair codificados, senão o navegador os leria
+        como querystring e fragmento da URL de edição."""
+        resposta = self.client.get(reverse('core:lista_models'), {'q': 'ana'})
+        self.assertContains(resposta, 'next=/lista/%3Fq%3Dana%23pendentes')
+
+    def test_salvar_volta_para_a_origem(self):
+        resposta = self.client.post(
+            reverse('core:editar', args=[self.pedido.pk]),
+            self.dados(next=self.origem, cor='verde'),
+        )
+        self.assertEqual(resposta['Location'], self.origem)
+
+    def test_cancelar_aponta_para_a_origem(self):
+        resposta = self.client.get(
+            reverse('core:editar', args=[self.pedido.pk]), {'next': self.origem}
+        )
+        self.assertContains(resposta, f'value="{self.origem}"')
+
+    def test_next_externo_e_ignorado(self):
+        resposta = self.client.post(
+            reverse('core:editar', args=[self.pedido.pk]),
+            self.dados(next='https://site-malicioso.example/'),
+        )
+        self.assertEqual(resposta['Location'], reverse('core:lista_models'))
+
+
+class TemaEscuroTest(TestCase):
+    def test_tema_e_aplicado_antes_de_pintar_a_tela(self):
+        """O script fica no <head>: no fim do body haveria flash branco."""
+        html = self.client.get(reverse('core:home')).content.decode()
+        cabeca = html.split('</head>')[0]
+        self.assertIn('data-bs-theme', cabeca)
+        self.assertIn('prefers-color-scheme: dark', cabeca)
+
+    def test_botao_de_alternar_aparece(self):
+        resposta = self.client.get(reverse('core:home'))
+        self.assertContains(resposta, 'id="alternar-tema"')
+        self.assertContains(resposta, 'core/js/tema.js')
+
+    def test_css_define_os_dois_temas(self):
+        css = open(finders.find('core/css/base.css'), encoding='utf-8').read()
+        self.assertIn(':root', css)
+        self.assertIn('[data-bs-theme="dark"]', css)
+
+    def test_css_das_paginas_nao_tem_cor_fixa(self):
+        """Cor fixa em CSS de página não acompanha a troca de tema."""
+        paginas = ('core/css/lista.css', 'core/css/cadastro.css',
+                   'core/css/home.css', 'core/css/sucesso.css')
+        for arquivo in paginas:
+            css = open(finders.find(arquivo), encoding='utf-8').read()
+            for cor in ('whitesmoke', '#f8f9fa', '#343a40'):
+                self.assertNotIn(cor, css, f'{arquivo} ainda tem {cor} fixo')

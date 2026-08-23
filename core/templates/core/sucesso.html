@@ -8,10 +8,23 @@
 
 {% block content %}
 <div class="sucesso-box text-center">
-    <h2>Cadastro concluído com sucesso!
-        assim que estiver pronto comunicaremos no numero cadastrado.
-        muito obrigado!
-    </h2>
+    <h2>Cadastro concluído com sucesso!</h2>
+
+    {% if pedido %}
+    {% comment %}O número é a única coisa que o solicitante leva na mão: sem
+       ele, não tem como se identificar ao perguntar sobre o andamento.{% endcomment %}
+    <p class="mt-4 mb-1 text-muted">Seu número de pedido é</p>
+    <p class="numero-pedido">#{{ pedido.pk }}</p>
+    <p class="text-muted">
+        Guarde este número. Ele identifica sua solicitação caso precise falar com o laboratório.
+    </p>
+    {% endif %}
+
+    <p class="mt-4">
+        Assim que estiver pronto, avisaremos no número de telefone cadastrado.
+        Muito obrigado!
+    </p>
+
     <div class="mt-4">
         <a href="{% url 'core:cadastro' %}" class="btn btn-outline-secondary btn-sucesso">Criar outro</a>
         {% comment %}A lista é restrita à equipe: para o solicitante anônimo esse botão

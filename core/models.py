@@ -66,8 +66,6 @@ class Models(models.Model):
     arq_upload = models.FileField(upload_to=rename_uploaded_file, blank=True, null=True)
     arq_link = models.URLField(blank=True, null=True)
 
-    data_envio = models.DateTimeField(default=timezone.now)
-
     # campos técnicos (opcionais)
     tipo_preenchimento = models.CharField(max_length=50, blank=True, null=True)
     porcentagem_preenchimento = models.IntegerField(
@@ -79,6 +77,8 @@ class Models(models.Model):
     qual_impressora = models.CharField(max_length=20, choices=ImpressorasChoice.choices, blank=True, null=True)
     tipo_filamento = models.CharField(max_length=20, choices=TipoFilamento.choices, blank=True, null=True)
 
+    # Data de envio do pedido. É auto_now_add de propósito: não dá para
+    # adulterar, e é o que ordena a fila e conta os dias de espera.
     created_at = models.DateTimeField(auto_now_add=True)
 
     # Não editável no formulário: só muda pela view atualizar_status, que

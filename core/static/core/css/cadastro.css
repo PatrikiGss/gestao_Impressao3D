@@ -1,48 +1,48 @@
 body {
-    background-color: #f8f9fa;
+    background-color: var(--fundo-pagina);
 }
 
 .cadastro-box {
     max-width: 700px;
     margin: 3rem auto;
     padding: 2.5rem;
-    background-color: #fff;
+    background-color: var(--fundo-caixa);
     border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: var(--sombra-caixa);
 }
 
 .cadastro-box h2 {
-    color: #343a40;
+    color: var(--cor-titulo);
     font-weight: 700;
     text-align: center;
 }
 
 /* Botão NÃO - vermelho */
 .btn-outline-danger {
-    color: #dc3545;
-    border-color: #dc3545;
+    color: var(--vermelho);
+    border-color: var(--vermelho);
 }
 .btn-outline-danger:hover,
 .btn-outline-danger.active {
-    background-color: #dc3545;
+    background-color: var(--vermelho);
     color: #fff;
-    border-color: #dc3545;
+    border-color: var(--vermelho);
 }
 
 /* Botão SIM e ENVIAR - verde IFSC */
 .btn-outline-success {
-    color: #007E3A;
-    border-color: #007E3A;
+    color: var(--verde-ifsc);
+    border-color: var(--verde-ifsc);
 }
 .btn-outline-success:hover,
 .btn-outline-success.active {
-    background-color: #007E3A;
+    background-color: var(--verde-ifsc);
     color: #fff;
-    border-color: #007E3A;
+    border-color: var(--verde-ifsc);
 }
 
 #campos-tecnicos {
-    background-color: #f8f9fa;
+    background-color: var(--fundo-caixa-suave);
     border-radius: 10px;
 }
 

@@ -10,13 +10,15 @@
 <div class="container cadastro-box mt-5 mb-5 p-4">
     <h2 class="text-center mb-1">Editar cadastro</h2>
     <p class="text-center text-muted mb-4">
-        {{ item.nome }} — {{ item.get_curso_display }} · enviado em {{ item.data_envio|date:"d/m/Y H:i" }}
+        {{ item.nome }} — {{ item.get_curso_display }} · enviado em {{ item.created_at|date:"d/m/Y H:i" }}
     </p>
 
     {% comment %}exigir-arquivo=false: o registro já pode ter um arquivo enviado antes, e
        o navegador não consegue preencher um <input type="file"> de volta.{% endcomment %}
     <form method="post" enctype="multipart/form-data" id="form-cadastro" data-exigir-arquivo="false" novalidate>
         {% csrf_token %}
+        {# Devolve o usuário para a aba, página e filtro de onde ele veio #}
+        <input type="hidden" name="next" value="{{ next }}">
 
         {% include 'core/partials/form_campos_basicos.html' %}
 
@@ -28,7 +30,7 @@
         </div>
 
         <div class="d-flex justify-content-center gap-2 mt-4">
-            <a href="{% url 'core:lista_models' %}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
+            <a href="{{ next }}" class="btn btn-outline-secondary btn-lg">Cancelar</a>
             <button type="submit" class="btn btn-outline-success btn-lg">Salvar alterações</button>
         </div>
     </form>

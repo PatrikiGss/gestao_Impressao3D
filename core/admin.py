@@ -20,10 +20,10 @@ class HistoricoStatusInline(admin.TabularInline):
 # --- Admin principal dos Cadastros ---
 @admin.register(Models)
 class ModelsAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'curso', 'status', 'data_envio', 'created_at')
-    list_filter = ('curso', 'status', 'data_envio')
+    list_display = ('nome', 'curso', 'status', 'created_at')
+    list_filter = ('curso', 'status', 'created_at')
     search_fields = ('nome', 'curso')
-    readonly_fields = ('status', 'data_envio', 'created_at')
+    readonly_fields = ('status', 'created_at')
     inlines = [HistoricoStatusInline]
 
     fieldsets = (
@@ -41,7 +41,7 @@ class ModelsAdmin(admin.ModelAdmin):
             )
         }),
         ('Status e datas', {
-            'fields': ('status', 'data_envio', 'created_at')
+            'fields': ('status', 'created_at')
         }),
     )
 

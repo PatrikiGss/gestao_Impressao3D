@@ -2,13 +2,13 @@
     max-width: 600px;
     margin: 5rem auto;
     padding: 3rem;
-    background-color: whitesmoke;
+    background-color: var(--fundo-caixa);
     border-radius: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: var(--sombra-caixa);
 }
 
 .sucesso-box h2 {
-    color: #343a40;
+    color: var(--cor-titulo);
     font-weight: 700;
 }
 
@@ -17,4 +17,15 @@
     margin: 0 5px;
     padding: 0.4rem 0.8rem;
     font-size: 0.95rem;
+}
+
+/* Número do pedido: é o que o solicitante precisa anotar, então tem que
+   saltar aos olhos. */
+.numero-pedido {
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+    color: var(--verde-ifsc);
+    letter-spacing: 0.02em;
 }

@@ -1,6 +1,39 @@
+/* ====== Cores do tema ======
+   Um token por papel, definido nos dois temas. Os CSS das páginas usam só
+   estas variáveis: cor fixa em arquivo de página quebra o modo escuro.
+   O tema vem do atributo data-bs-theme no <html>, o mesmo que o Bootstrap 5.3
+   usa para trocar os componentes dele. */
+:root {
+    --fundo-pagina: whitesmoke;
+    --fundo-caixa: #ffffff;
+    --fundo-caixa-suave: #f8f9fa;
+    --cor-titulo: #343a40;
+    --cor-texto-suave: #6c757d;
+    --borda-suave: #dddddd;
+    --sombra-caixa: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --verde-ifsc: #007E3A;
+    --vermelho: #dc3545;
+    --opacidade-marca: 0.9;
+}
+
+[data-bs-theme="dark"] {
+    --fundo-pagina: #16191c;
+    --fundo-caixa: #212529;
+    --fundo-caixa-suave: #2b3035;
+    --cor-titulo: #e9ecef;
+    --cor-texto-suave: #adb5bd;
+    --borda-suave: #3d444b;
+    --sombra-caixa: 0 4px 12px rgba(0, 0, 0, 0.5);
+    /* O verde da marca não alcança contraste legível sobre fundo escuro;
+       este é o mesmo tom clareado. */
+    --verde-ifsc: #4caf7d;
+    --vermelho: #ea868f;
+    --opacidade-marca: 0.3;
+}
+
 /* ====== Fundo com marca d'água do IFSC ====== */
 body {
-    background-color: whitesmoke;
+    background-color: var(--fundo-pagina);
     position: relative;
     overflow-x: hidden;
 }
@@ -16,13 +49,10 @@ body::before {
     background-repeat: no-repeat;
     background-size: contain; /* mantém proporções do logo */
     background-position: top left;
-    opacity: 0.90; /* transparência suave */
+    opacity: var(--opacidade-marca);
     z-index: -1; /* mantém atrás de todo o conteúdo */
     pointer-events: none; /* não interfere nos cliques */
 }
-
-
-
 
 .main-content {
     flex: 1;
@@ -30,4 +60,27 @@ body::before {
 
 footer {
     font-size: 0.9rem;
+}
+
+/* ====== Botão de alternar tema ======
+   Os dois ícones ficam no HTML e o CSS esconde o que não vale para o tema
+   atual: assim o ícone certo já aparece na primeira pintura, sem esperar JS. */
+#alternar-tema {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    line-height: 1;
+}
+
+:root .icone-escuro,
+[data-bs-theme="light"] .icone-escuro {
+    display: none;
+}
+
+[data-bs-theme="dark"] .icone-claro {
+    display: none;
+}
+
+[data-bs-theme="dark"] .icone-escuro {
+    display: inline;
 }

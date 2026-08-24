@@ -1,7 +1,11 @@
 # Gestão de Impressoras 3D — IFSC Campus Lages
 
-[![Testes](https://github.com/PatrikiGss/gestao_Impressao3D/actions/workflows/testes.yml/badge.svg)](https://github.com/PatrikiGss/gestao_Impressao3D/actions/workflows/testes.yml)
+[![Testes](https://github.com/PatrikiGss/gestao_Impressao3D/actions/workflows/testes.yml/badge.svg)]
+
+(https://github.com/PatrikiGss/gestao_Impressao3D/actions/workflows/testes.yml)
+
 **Acesse:** [Impressão3D](https://gestao-impressao3d.onrender.com)
+
 Sistema para organizar a fila de impressão 3D do laboratório.
 
 O aluno preenche um formulário público com os dados dele e o arquivo do modelo (ou um link, se preferir). A equipe do laboratório faz login, vê os pedidos separados em Pendentes, Em produção e Concluídos, baixa o arquivo, chama o aluno no WhatsApp e vai movendo o pedido entre os status. Cada mudança fica registrada com autor e data, e dá pra exportar esse histórico em PDF pelo admin do Django.

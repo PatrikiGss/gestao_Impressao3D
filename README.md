@@ -207,9 +207,9 @@ O arquivo `render.yaml` descreve a configuração do serviço e o `build.sh` é 
 
 O processo de build realiza:
 
-1. Instalação das dependências
-2. Coleta dos arquivos estáticos
-3. Aplicação das migrations
+1. Instalação das dependências;
+2. Coleta dos arquivos estáticos;
+3. Aplicação das migrations.
 
 Caso alguma etapa apresente erro, o deploy é interrompido.
 
@@ -233,50 +233,9 @@ O banco pode entrar em estado de suspensão após um período de inatividade. A 
 
 ## Arquivos enviados
 
-Existe uma limitação importante no ambiente gratuito do Render: o armazenamento local é **efêmero**.
+Os modelos 3D enviados pelos alunos são armazenados pela aplicação e ficam vinculados às respectivas solicitações.
 
-Isso significa que arquivos gravados no disco da aplicação podem ser apagados durante:
-
-* Novo deploy
-* Reinicialização da aplicação
-* Hibernação
-* Outras operações de infraestrutura
-
-No caso deste projeto, isso afeta diretamente os arquivos de modelos 3D enviados pelos alunos.
-
-O registro da solicitação permanece no PostgreSQL, mas o arquivo armazenado localmente pode desaparecer. Nesse caso, o download do modelo deixará de funcionar.
-
-### Alternativas
-
-Existem três opções principais para resolver esse problema:
-
-**1. Utilizar apenas links**
-
-O formulário já permite informar um link para o arquivo. Serviços como Google Drive e OneDrive podem ser utilizados para armazenar os modelos.
-
-É a alternativa mais simples e não exige alterações significativas no projeto.
-
-**2. Utilizar Persistent Disk do Render**
-
-O Render oferece armazenamento persistente em planos pagos.
-
-Nesse cenário, o `MEDIA_ROOT` pode ser direcionado para o disco persistente.
-
-Essa solução possui limitações relacionadas à execução de múltiplas instâncias da aplicação.
-
-**3. Utilizar armazenamento de objetos**
-
-Serviços como:
-
-* Amazon S3
-* Cloudflare R2
-* Backblaze B2
-
-podem ser utilizados em conjunto com `django-storages`.
-
-Essa é a solução mais adequada para uma aplicação que precise escalar ou executar múltiplas instâncias, embora exija configuração adicional.
-
-Enquanto uma dessas soluções não estiver implementada, o ambiente hospedado no Render deve ser considerado **demonstração**, e não um ambiente de produção confiável para armazenamento dos arquivos enviados.
+O formulário também permite informar um link externo para o arquivo quando necessário.
 
 ### Limite de upload
 

@@ -7,6 +7,7 @@ navegador.
 
 import os
 import re
+from unittest import mock
 import shutil
 from pathlib import Path
 import tempfile
@@ -861,3 +862,84 @@ class EstaticosVersionadosTest(TestCase):
                 for achado in re.findall(r'\{%\s*static\s+\'[^\']+\.(?:css|js)\'', html):
                     pendentes.append(f'{caminho.name}: {achado}')
         self.assertEqual(pendentes, [], f'usar static_v nestes casos: {pendentes}')
+
+
+class ConfiguracaoDeDeployTest(TestCase):
+    """Checagens da infraestrutura de deploy no Render.
+
+    Cada uma corresponde a um erro que só apareceria com o site já no ar.
+    """
+
+    def raiz(self):
+        return Path(settings.BASE_DIR)
+
+    def test_whitenoise_esta_logo_apos_o_security_middleware(self):
+        """Fora dessa posição o WhiteNoise não serve os estáticos, e com
+        DEBUG=False o site sobe sem nenhum CSS."""
+        middleware = settings.MIDDLEWARE
+        self.assertIn('whitenoise.middleware.WhiteNoiseMiddleware', middleware)
+        self.assertEqual(
+            middleware.index('whitenoise.middleware.WhiteNoiseMiddleware'),
+            middleware.index('django.middleware.security.SecurityMiddleware') + 1,
+        )
+
+    def test_hostname_do_render_entra_em_allowed_hosts_e_csrf(self):
+        """Sem isso todo request no domínio .onrender.com vira HTTP 400, e todo
+        POST quebra na verificação de CSRF."""
+        import importlib
+
+        from Impressora3D import settings as modulo
+
+        with mock.patch.dict(os.environ, {'RENDER_EXTERNAL_HOSTNAME': 'teste.onrender.com'}):
+            recarregado = importlib.reload(modulo)
+
+        try:
+            self.assertIn('teste.onrender.com', recarregado.ALLOWED_HOSTS)
+            self.assertIn('https://teste.onrender.com', recarregado.CSRF_TRUSTED_ORIGINS)
+            self.assertNotIn('https://localhost', recarregado.CSRF_TRUSTED_ORIGINS)
+        finally:
+            importlib.reload(modulo)
+
+    def test_database_url_tem_precedencia_e_exige_ssl(self):
+        import importlib
+
+        from Impressora3D import settings as modulo
+
+        url = 'postgresql://u:s@host.render.com:5432/banco'
+        with mock.patch.dict(os.environ, {'DATABASE_URL': url, 'DEBUG': 'False', 'SECRET_KEY': 'x' * 60}):
+            recarregado = importlib.reload(modulo)
+
+        try:
+            banco = recarregado.DATABASES['default']
+            self.assertEqual(banco['ENGINE'], 'django.db.backends.postgresql')
+            self.assertEqual(banco['NAME'], 'banco')
+            self.assertEqual(banco['OPTIONS'].get('sslmode'), 'require')
+            self.assertTrue(banco['CONN_MAX_AGE'])
+        finally:
+            importlib.reload(modulo)
+
+    def test_build_sh_existe_e_faz_o_essencial(self):
+        script = (self.raiz() / 'build.sh').read_text(encoding='utf-8')
+        for passo in ('pip install -r requirements.txt',
+                      'collectstatic --no-input',
+                      'manage.py migrate'):
+            self.assertIn(passo, script, f'build.sh sem o passo: {passo}')
+        self.assertIn('set -o errexit', script,
+                      'sem errexit um passo que falha publicaria versão quebrada')
+
+    def test_build_sh_usa_fim_de_linha_lf(self):
+        """Com CRLF o Linux lê o shebang como '/usr/bin/env bash\\r' e o deploy
+        falha com 'bad interpreter'."""
+        bruto = (self.raiz() / 'build.sh').read_bytes()
+        self.assertNotIn(b'\r', bruto)
+
+    def test_render_yaml_declara_servico_e_banco(self):
+        blueprint = (self.raiz() / 'render.yaml').read_text(encoding='utf-8')
+        for trecho in ('buildCommand', './build.sh', 'gunicorn Impressora3D.wsgi',
+                       'DATABASE_URL', 'SECRET_KEY'):
+            self.assertIn(trecho, blueprint)
+
+    def test_requirements_traz_o_necessario_para_producao(self):
+        reqs = (self.raiz() / 'requirements.txt').read_text(encoding='utf-8')
+        for pacote in ('gunicorn', 'whitenoise', 'dj-database-url', 'psycopg2-binary'):
+            self.assertIn(pacote, reqs)

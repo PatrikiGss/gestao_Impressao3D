@@ -44,6 +44,18 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
+# O Render publica o domínio do serviço nesta variável. Sem acrescentá-la, todo
+# request no domínio .onrender.com viraria HTTP 400.
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# O Django 4+ exige origem declarada para POST vindo de HTTPS. Sem isto, todo
+# formulário no ar quebraria com "CSRF verification failed".
+CSRF_TRUSTED_ORIGINS = [
+    f'https://{host}' for host in ALLOWED_HOSTS if host not in ('localhost', '127.0.0.1')
+]
+
 
 # Application definition
 
@@ -61,6 +73,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # WhiteNoise serve os estáticos direto do processo Django. No Render não há
+    # nginx na frente: sem ele, com DEBUG=False o site sobe sem nenhum CSS.
+    # Precisa vir logo depois do SecurityMiddleware.
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -92,11 +108,27 @@ WSGI_APPLICATION = 'Impressora3D.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Padrão: SQLite, para o projeto rodar logo após o clone sem instalar nada.
-# Em produção defina DB_ENGINE=postgresql no .env junto das demais DB_*.
+# Ordem de precedência:
+#   1. DATABASE_URL  — o Render (e a maioria dos PaaS) entrega assim
+#   2. DB_ENGINE + DB_*  — Postgres configurado peça por peça
+#   3. SQLite        — padrão, para o projeto rodar logo após o clone
+DATABASE_URL = config('DATABASE_URL', default='')
 DB_ENGINE = config('DB_ENGINE', default='sqlite3')
 
-if DB_ENGINE == 'sqlite3':
+if DATABASE_URL:
+    import dj_database_url
+
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            # Reaproveita a conexão entre requests em vez de abrir uma nova a
+            # cada um; no plano gratuito do Render isso faz diferença.
+            conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=not DEBUG,
+        )
+    }
+elif DB_ENGINE == 'sqlite3':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -116,7 +148,10 @@ else:
     }
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Configurável para apontar a um disco persistente. ATENÇÃO: no plano gratuito
+# do Render o disco é efêmero — os arquivos enviados pelos alunos somem a cada
+# deploy ou reinício. Ver "Arquivos enviados" no README.
+MEDIA_ROOT = config('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -158,6 +193,22 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Não há STATICFILES_DIRS: cada app serve seus próprios estáticos a partir da
 # sua pasta static/ (core/static/core/, etc.), via APP_DIRS do staticfiles.
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'staticfiles': {
+        # Em produção o WhiteNoise comprime os arquivos e põe um hash no nome,
+        # o que permite cache eterno no navegador sem risco de servir versão
+        # velha. Em desenvolvimento fica o backend simples, senão seria preciso
+        # rodar collectstatic a cada alteração de CSS.
+        'BACKEND': (
+            'django.contrib.staticfiles.storage.StaticFilesStorage' if DEBUG
+            else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+        ),
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

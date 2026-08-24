@@ -1,0 +1,48 @@
+# Blueprint do Render: descreve o serviço web e o banco.
+# No painel do Render: New > Blueprint, aponte para o repositório e ele lê
+# este arquivo. Também serve de documentação de como o deploy é montado,
+# mesmo para quem preferir criar o serviço na mão.
+
+databases:
+  - name: impressao3d-db
+    databaseName: impressao3d
+    user: impressao3d
+    plan: free
+
+services:
+  - type: web
+    name: gestao-impressao3d
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: "./build.sh"
+    # O WhiteNoise serve os estáticos dentro do próprio processo, então não é
+    # preciso nada além do gunicorn.
+    startCommand: "gunicorn Impressora3D.wsgi:application"
+    healthCheckPath: /
+
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: impressao3d-db
+          property: connectionString
+
+      # Gerada pelo Render na primeira vez e mantida entre deploys.
+      - key: SECRET_KEY
+        generateValue: true
+
+      - key: DEBUG
+        value: "False"
+
+      # O domínio .onrender.com é acrescentado automaticamente pelo settings,
+      # via RENDER_EXTERNAL_HOSTNAME. Esta lista é só para domínio próprio.
+      - key: ALLOWED_HOSTS
+        sync: false
+
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+
+      # Só faz sentido com o plano pago, que tem disco persistente.
+      # Ver a seção "Arquivos enviados" no README antes de habilitar.
+      # - key: MEDIA_ROOT
+      #   value: /var/data/media

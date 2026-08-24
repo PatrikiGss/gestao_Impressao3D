@@ -1,0 +1,8 @@
+# O projeto é desenvolvido no Windows e implantado em Linux (Render).
+# Scripts de shell precisam de fim de linha LF: com CRLF, o Linux lê o shebang
+# como "/usr/bin/env bash\r" e o deploy falha com "bad interpreter".
+*.sh text eol=lf
+
+# Idem para arquivos lidos por ferramentas que não toleram CR.
+*.yml text eol=lf
+*.yaml text eol=lf

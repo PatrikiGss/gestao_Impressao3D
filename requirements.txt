@@ -8,3 +8,8 @@ django-widget-tweaks==1.5.0   # filtros de template usados nos formularios
 reportlab==4.4.4              # exporta o historico de status em PDF pelo admin
 psycopg2-binary==2.9.10       # driver do PostgreSQL, usado em producao
 tzdata==2025.2                # base de fusos horarios (necessaria no Windows)
+
+# Deploy (Render)
+gunicorn==23.0.0              # servidor WSGI de producao
+whitenoise==6.8.2             # serve os estaticos sem nginx na frente
+dj-database-url==2.3.0        # le a DATABASE_URL que o Render fornece

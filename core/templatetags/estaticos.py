@@ -35,16 +35,27 @@ def _caminho_no_disco(caminho):
         return None
 
 
+def _storage_ja_versiona():
+    """O storage já põe hash no nome do arquivo?
+
+    É o caso do CompressedManifestStaticFilesStorage do WhiteNoise, usado em
+    produção. Aí a URL já muda sozinha e o ?v= seria redundante — pior, mudaria
+    a cada deploy e anularia o cache longo que o hash permite.
+    """
+    return hasattr(staticfiles_storage, 'manifest_name')
+
+
 @register.simple_tag
 def static_v(caminho):
     if not settings.DEBUG and caminho in _versoes:
         return _versoes[caminho]
 
     url = static(caminho)
-    arquivo = _caminho_no_disco(caminho)
 
-    if arquivo and arquivo.exists():
-        url = f'{url}?v={int(arquivo.stat().st_mtime)}'
+    if not _storage_ja_versiona():
+        arquivo = _caminho_no_disco(caminho)
+        if arquivo and arquivo.exists():
+            url = f'{url}?v={int(arquivo.stat().st_mtime)}'
 
     _versoes[caminho] = url
     return url

@@ -122,12 +122,20 @@ if DATABASE_URL:
         'default': dj_database_url.parse(
             DATABASE_URL,
             # Reaproveita a conexão entre requests em vez de abrir uma nova a
-            # cada um; no plano gratuito do Render isso faz diferença.
+            # cada um. O health check é o que torna isso seguro com bancos que
+            # hibernam (o Neon suspende depois de alguns minutos ociosos):
+            # a conexão morta é descartada em vez de estourar no meio da view.
             conn_max_age=600,
             conn_health_checks=True,
             ssl_require=not DEBUG,
         )
     }
+
+    # O endpoint com "-pooler" no host (o recomendado pelo Neon) passa por
+    # PgBouncer em modo transaction, que não suporta cursor no servidor.
+    # Sem desligar, QuerySet.iterator() falharia em produção.
+    if '-pooler' in DATABASES['default'].get('HOST', ''):
+        DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
 elif DB_ENGINE == 'sqlite3':
     DATABASES = {
         'default': {

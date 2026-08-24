@@ -40,88 +40,27 @@ Tudo fica no `.env`, que não vai pro git — o `.env.example` é o modelo.
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
-`DB_ENGINE` aceita `sqlite3` (padrão) ou `postgresql`. Usando Postgres, preencha também `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST` e `DB_PORT`; no SQLite essas variáveis são ignoradas.
+O banco é escolhido em três níveis. Se existir `DATABASE_URL`, ela vence — é o formato que Neon, Render e a maioria dos serviços entregam. Senão vale `DB_ENGINE`, que aceita `sqlite3` (padrão) ou `postgresql` com as variáveis `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST` e `DB_PORT`.
 
-## Deploy no Render
+## Deploy
 
-O repositório já vem com `render.yaml` e `build.sh`. No painel do Render:
-**New → Blueprint**, aponte para este repositório e confirme. Ele cria o
-serviço web e o banco Postgres, liga a `DATABASE_URL` entre os dois e gera a
-`SECRET_KEY` sozinho.
+A aplicação roda no Render e o banco fica no Neon. O `render.yaml` descreve o serviço web e o `build.sh` é o que o Render executa a cada deploy: instala as dependências, roda o `collectstatic` e aplica as migrations, abortando no primeiro erro em vez de publicar uma versão quebrada.
 
-Prefere criar na mão? É um Web Service Python com:
+O domínio `.onrender.com` entra sozinho no `ALLOWED_HOSTS` e no `CSRF_TRUSTED_ORIGINS`, porque o settings lê a variável `RENDER_EXTERNAL_HOSTNAME` que o Render injeta. Pra domínio próprio, acrescente ele no `ALLOWED_HOSTS`.
 
-- **Build Command:** `./build.sh`
-- **Start Command:** `gunicorn Impressora3D.wsgi:application`
-- **Environment:** `DEBUG=False`, `SECRET_KEY` (gerada), e `DATABASE_URL`
-  apontando para o banco
+Não há nginx na frente do Django: quem serve CSS e JS é o WhiteNoise, dentro do próprio processo. Em produção os arquivos saem com hash no nome, o que permite cache eterno no navegador.
 
-O domínio `.onrender.com` entra sozinho em `ALLOWED_HOSTS` e em
-`CSRF_TRUSTED_ORIGINS` — o settings lê a variável `RENDER_EXTERNAL_HOSTNAME`
-que o Render injeta. Para domínio próprio, acrescente-o em `ALLOWED_HOSTS`.
+Do lado do Neon, use a connection string do endpoint com `-pooler` no host. Ele passa por PgBouncer em modo transaction, e o settings detecta isso pelo nome e desliga os cursores no servidor, que esse modo não suporta. O banco hiberna depois de alguns minutos ocioso; a conexão é reaproveitada entre requests com verificação de saúde, então a conexão morta é descartada em vez de estourar no meio de uma tela.
 
-Depois do primeiro deploy, crie o administrador pelo Shell do Render:
+## Arquivos enviados
 
-```bash
-python manage.py createsuperuser
-```
+No plano gratuito do Render o disco é efêmero. Todo deploy, reinício ou hibernação apaga o que foi gravado — inclusive os modelos 3D que os alunos enviaram. O registro no banco sobrevive, mas o arquivo some e o download passa a dar 404.
 
-Os estáticos são servidos pelo **WhiteNoise**, dentro do próprio processo — não
-há nginx na frente. O `collectstatic` roda no build e os arquivos saem com hash
-no nome, o que permite cache eterno no navegador.
+Três saídas. A mais simples é aceitar só link: o formulário já permite, e se a turma usa Drive ou OneDrive dá pra remover o campo de upload. A segunda é o disco persistente do Render, que é plano pago — monte o disco, aponte o `MEDIA_ROOT` pra ele e pronto, com a limitação de não funcionar com mais de uma instância. A terceira é armazenamento de objetos (S3, Cloudflare R2, Backblaze B2) via `django-storages`, que escala e é a única que sobrevive a múltiplas instâncias, mas exige conta no serviço e mais configuração.
 
-## ⚠️ Arquivos enviados
+Enquanto nenhuma delas estiver em pé, trate o ambiente do Render como demonstração, não como produção.
 
-**No plano gratuito do Render o disco é efêmero.** Todo deploy, reinício ou
-hibernação por inatividade apaga o que foi gravado em disco — inclusive os
-modelos 3D que os alunos enviaram. Os registros no banco sobrevivem, mas o
-arquivo some e o download passa a dar 404.
-
-Três saídas, da mais simples à mais completa:
-
-1. **Só aceitar link.** O formulário já permite enviar um link em vez de
-   arquivo. Se a turma usa Drive ou OneDrive, dá para remover o campo de upload
-   e o problema desaparece.
-2. **Disco persistente do Render** (plano pago). Monte um disco, aponte
-   `MEDIA_ROOT` para ele — por exemplo `/var/data/media` — e pronto. Há um
-   exemplo comentado no `render.yaml`. Limitação: não funciona com mais de uma
-   instância.
-3. **Armazenamento de objetos** (S3, Cloudflare R2, Backblaze B2), via
-   `django-storages`. É a solução que escala e a única que sobrevive a
-   múltiplas instâncias. Exige uma conta no serviço e mais quatro variáveis de
-   ambiente.
-
-Enquanto nenhuma das três estiver em pé, trate o ambiente do Render como
-demonstração, não como produção.
-
-Duas outras coisas do plano gratuito: o serviço **hiberna após 15 minutos** sem
-acesso, e o primeiro request depois disso demora cerca de 50 segundos; e o
-banco gratuito **expira em 30 dias**.
-
-## Produção fora do Render
-
-Ajustes mínimos no `.env`:
-
-```
-DEBUG=False
-SECRET_KEY=<chave gerada, nunca a de desenvolvimento>
-ALLOWED_HOSTS=seu.dominio.br
-DB_ENGINE=postgresql
-DB_NAME=impressao3d
-DB_USER=postgres
-DB_PASSWORD=
-DB_HOST=localhost
-DB_PORT=5432
-```
-
-Ou, se o provedor entregar a URL pronta, só `DATABASE_URL` — ela tem
-precedência sobre as `DB_*`.
-
-Depois é rodar `migrate` e `collectstatic --no-input`.
-
-Vale limitar o tamanho do upload no servidor web, com `client_max_body_size`: o
-limite de 25 MB que existe no formulário só é conferido depois do arquivo
-chegar inteiro.
+Vale também limitar o tamanho do upload no servidor web, com `client_max_body_size`: o limite de 25 MB que existe no formulário só é conferido depois do arquivo chegar inteiro.
 
 ## Organização
 

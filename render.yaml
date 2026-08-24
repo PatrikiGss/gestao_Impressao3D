@@ -1,13 +1,10 @@
-# Blueprint do Render: descreve o serviço web e o banco.
-# No painel do Render: New > Blueprint, aponte para o repositório e ele lê
-# este arquivo. Também serve de documentação de como o deploy é montado,
-# mesmo para quem preferir criar o serviço na mão.
-
-databases:
-  - name: impressao3d-db
-    databaseName: impressao3d
-    user: impressao3d
-    plan: free
+# Blueprint do Render: descreve o serviço web.
+# No painel: New > Blueprint, aponte para o repositório e ele lê este arquivo.
+# Serve também de documentação de como o deploy é montado, mesmo para quem
+# preferir criar o serviço na mão.
+#
+# O banco NÃO está aqui: fica no Neon (neon.tech), fora do Render. A
+# DATABASE_URL é colada à mão no painel — ver o passo a passo no README.
 
 services:
   - type: web
@@ -22,10 +19,10 @@ services:
     healthCheckPath: /
 
     envVars:
+      # sync: false = o Render pergunta o valor na criação e nunca sobrescreve.
+      # Cole aqui a connection string do Neon (a do endpoint com -pooler).
       - key: DATABASE_URL
-        fromDatabase:
-          name: impressao3d-db
-          property: connectionString
+        sync: false
 
       # Gerada pelo Render na primeira vez e mantida entre deploys.
       - key: SECRET_KEY
@@ -43,6 +40,6 @@ services:
         value: "3.12.7"
 
       # Só faz sentido com o plano pago, que tem disco persistente.
-      # Ver a seção "Arquivos enviados" no README antes de habilitar.
+      # Ver "Arquivos enviados" no README antes de habilitar.
       # - key: MEDIA_ROOT
       #   value: /var/data/media

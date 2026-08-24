@@ -1,21 +1,22 @@
-/* Caixa central */
-  .home-box {
+/* Caixa central. Translucida de proposito: deixa a marca d'agua do IFSC
+   aparecer atras. */
+.home-box {
     max-width: 700px;
     width: 100%;
     padding: 3rem;
     margin: 5rem auto;
-    background-color: var(--fundo-caixa); /* transparente para deixar ver a imagem de fundo */
+    background-color: var(--fundo-cartao-translucido);
     border-radius: 15px;
     box-shadow: var(--sombra-caixa);
     text-align: center;
-  }
+}
 
-  .home-box h1 {
+.home-box h1 {
     color: var(--cor-titulo);
     font-weight: 700;
-  }
+}
 
-  .home-box p {
+.home-box p {
     color: var(--cor-texto-suave);
     font-size: 1.1rem;
-  }
+}

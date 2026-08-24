@@ -1,19 +1,19 @@
-body {
-    background-color: var(--fundo-pagina);
+/* Ajuste fino para altura e espacamento */
+.container {
+    margin-top: 40px;
 }
 
-/* Ajuste fino para altura e espaçamento */
-.container {
-    margin-top: 40px; /* aproxima mais do topo */
+.cartao-login {
+    background-color: var(--fundo-cartao);
 }
 
 /* Efeito suave nos inputs */
 .form-control:focus {
     border-color: var(--cor-texto-suave);
-    box-shadow: 0 0 0 0.15rem rgba(108,117,125,0.25);
+    box-shadow: 0 0 0 0.15rem rgba(108, 117, 125, 0.25);
 }
 
-/* Botão ENTRAR - verde IFSC */
+/* Botao ENTRAR - verde IFSC */
 .btn-outline-success {
     background-color: transparent;
     color: var(--verde-ifsc);
@@ -23,7 +23,7 @@ body {
 
 .btn-outline-success:hover {
     background-color: var(--verde-ifsc);
-    color: #fff;
+    color: var(--sobre-verde);
     border-color: var(--verde-ifsc);
     transform: translateY(-1px);
 }

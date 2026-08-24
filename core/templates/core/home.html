@@ -1,10 +1,11 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% load estaticos %}
 {% block title %}Home - Impressora 3D{% endblock %}
 
 {% block extra_css %}
     <!-- Seu CSS adicional -->
-    <link rel="stylesheet" href="{% static 'core/css/home.css' %}">
+    <link rel="stylesheet" href="{% static_v 'core/css/home.css' %}">
 {% endblock %}
 
 {% block content %}

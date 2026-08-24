@@ -1,9 +1,10 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% load estaticos %}
 {% block title %}Editar {{ item.nome }} - Impressora 3D{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/cadastro.css' %}">
+<link rel="stylesheet" href="{% static_v 'core/css/cadastro.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -24,7 +25,7 @@
 
         {% comment %}Diferente do cadastro público, aqui os campos técnicos já vêm
            abertos: quem edita é a equipe do laboratório.{% endcomment %}
-        <div class="mt-3 p-3 bg-light rounded">
+        <div class="mt-3 p-3 painel-interno">
             <h5>Campos técnicos</h5>
             {% include 'core/partials/form_campos_tecnicos.html' %}
         </div>
@@ -39,5 +40,5 @@
 
 {% block extra_js %}
 <script src="https://unpkg.com/imask"></script>
-<script src="{% static 'core/js/cadastro.js' %}"></script>
+<script src="{% static_v 'core/js/cadastro.js' %}"></script>
 {% endblock %}

@@ -1,15 +1,16 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% load estaticos %}
 {% load widget_tweaks %}
 {% block title %}Login - Impressora 3D{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'autenticacao/css/login.css' %}">
+<link rel="stylesheet" href="{% static_v 'autenticacao/css/login.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="container d-flex justify-content-center align-items-start" style="min-height: 85vh; padding-top: 60px;">
-    <div class="card shadow-lg border-0 rounded-4 p-4" style="max-width: 420px; width: 100%; background-color: #f8f9fa;">
+    <div class="card cartao-login shadow-lg border-0 rounded-4 p-4" style="max-width: 420px; width: 100%;">
         <div class="card-body">
             <h3 class="text-center mb-4 fw-bold">Login</h3>
 

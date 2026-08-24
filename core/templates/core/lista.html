@@ -1,9 +1,10 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% load estaticos %}
 {% block title %}Lista de Cadastros{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/lista.css' %}">
+<link rel="stylesheet" href="{% static_v 'core/css/lista.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -83,5 +84,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'core/js/lista.js' %}"></script>
+<script src="{% static_v 'core/js/lista.js' %}"></script>
 {% endblock %}

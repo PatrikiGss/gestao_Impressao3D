@@ -1,9 +1,10 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% load estaticos %}
 {% block title %}Cadastro - Impressora 3D{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/cadastro.css' %}">
+<link rel="stylesheet" href="{% static_v 'core/css/cadastro.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -27,7 +28,7 @@
         </fieldset>
 
         <!-- Campos técnicos -->
-        <div id="campos-tecnicos" class="mt-3 p-3 bg-light rounded" style="display:none;">
+        <div id="campos-tecnicos" class="mt-3 p-3 painel-interno" style="display:none;">
             <h5>Campos técnicos (opcionais)</h5>
             {% include 'core/partials/form_campos_tecnicos.html' %}
         </div>
@@ -42,5 +43,5 @@
 
 {% block extra_js %}
 <script src="https://unpkg.com/imask"></script>
-<script src="{% static 'core/js/cadastro.js' %}"></script>
+<script src="{% static_v 'core/js/cadastro.js' %}"></script>
 {% endblock %}

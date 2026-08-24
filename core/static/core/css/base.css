@@ -1,39 +1,117 @@
-/* ====== Cores do tema ======
-   Um token por papel, definido nos dois temas. Os CSS das páginas usam só
-   estas variáveis: cor fixa em arquivo de página quebra o modo escuro.
-   O tema vem do atributo data-bs-theme no <html>, o mesmo que o Bootstrap 5.3
-   usa para trocar os componentes dele. */
+/* ============================================================
+   Tema claro / escuro
+   ============================================================
+   Uma escala de superfícies, do fundo para a frente:
+
+       pagina  →  secao  →  cartao
+
+   O tema vem do data-bs-theme no <html> — o mesmo atributo que o
+   Bootstrap 5.3 usa. Os seletores abaixo são :root[data-bs-theme=...]
+   de propósito: componentes que carregam seu próprio data-bs-theme
+   (a navbar, por exemplo) não podem redefinir esta paleta.
+
+   Regra para os CSS de página: usar só estas variáveis. Cor fixa em
+   arquivo de página não acompanha a troca de tema — foi assim que o
+   painel de campos técnicos ficou branco sobre branco no escuro. */
+
 :root {
-    --fundo-pagina: whitesmoke;
-    --fundo-caixa: #ffffff;
-    --fundo-caixa-suave: #f8f9fa;
+    --fundo-pagina: #eef0f2;
+    --fundo-secao: #f8f9fa;
+    --fundo-cartao: #ffffff;
+    --fundo-cartao-translucido: rgba(255, 255, 255, 0.85);
+    --fundo-chrome: #212529;          /* navbar e rodapé: escuros nos dois temas */
+
     --cor-titulo: #343a40;
+    --cor-texto: #212529;
     --cor-texto-suave: #6c757d;
-    --borda-suave: #dddddd;
-    --sombra-caixa: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --borda-suave: #dee2e6;
+    --sombra-caixa: 0 4px 12px rgba(0, 0, 0, 0.08);
+
     --verde-ifsc: #007E3A;
+    --sobre-verde: #ffffff;           /* texto legível sobre o verde */
     --vermelho: #dc3545;
+
     --opacidade-marca: 0.9;
+    --filtro-fechar-modal: invert(1) grayscale(100%) brightness(200%);
 }
 
-[data-bs-theme="dark"] {
-    --fundo-pagina: #16191c;
-    --fundo-caixa: #212529;
-    --fundo-caixa-suave: #2b3035;
+:root[data-bs-theme="dark"] {
+    --fundo-pagina: #121416;
+    --fundo-secao: #1b1f23;
+    --fundo-cartao: #262b31;
+    --fundo-cartao-translucido: rgba(38, 43, 49, 0.85);
+    --fundo-chrome: #0d0f11;
+
     --cor-titulo: #e9ecef;
-    --cor-texto-suave: #adb5bd;
-    --borda-suave: #3d444b;
-    --sombra-caixa: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --cor-texto: #dee2e6;
+    --cor-texto-suave: #9aa4ae;
+    --borda-suave: #3a4147;
+    --sombra-caixa: 0 4px 12px rgba(0, 0, 0, 0.45);
+
     /* O verde da marca não alcança contraste legível sobre fundo escuro;
-       este é o mesmo tom clareado. */
+       este é o mesmo tom clareado, e o texto sobre ele passa a ser escuro. */
     --verde-ifsc: #4caf7d;
+    --sobre-verde: #10241a;
     --vermelho: #ea868f;
-    --opacidade-marca: 0.3;
+
+    --opacidade-marca: 0.25;
+    --filtro-fechar-modal: none;
+}
+
+/* Liga a paleta às variáveis do próprio Bootstrap, para que ele use a mesma
+   escala em vez do cinza padrão. */
+:root,
+:root[data-bs-theme="dark"] {
+    --bs-body-bg: var(--fundo-pagina);
+    --bs-body-color: var(--cor-texto);
+    --bs-emphasis-color: var(--cor-titulo);
+    --bs-secondary-color: var(--cor-texto-suave);
+    --bs-border-color: var(--borda-suave);
+}
+
+/* As variáveis de componente do Bootstrap 5.3 são declaradas no próprio
+   componente (.card define --bs-card-bg), então uma declaração em :root não
+   as alcança: a local sempre vence. Por isso o override vem aqui. */
+.card {
+    --bs-card-bg: var(--fundo-cartao);
+    --bs-card-border-color: var(--borda-suave);
+}
+
+.modal {
+    --bs-modal-bg: var(--fundo-cartao);
+    --bs-modal-border-color: var(--borda-suave);
+}
+
+.modal-content {
+    background-color: var(--fundo-cartao);
+}
+
+.dropdown-menu {
+    --bs-dropdown-bg: var(--fundo-cartao);
+    --bs-dropdown-border-color: var(--borda-suave);
+    --bs-dropdown-link-color: var(--cor-texto);
+}
+
+.list-group {
+    --bs-list-group-bg: transparent;
+    --bs-list-group-border-color: var(--borda-suave);
+    --bs-list-group-color: var(--cor-texto);
+}
+
+.pagination {
+    --bs-pagination-bg: var(--fundo-cartao);
+    --bs-pagination-border-color: var(--borda-suave);
+    --bs-pagination-color: var(--verde-ifsc);
+    --bs-pagination-active-bg: var(--verde-ifsc);
+    --bs-pagination-active-border-color: var(--verde-ifsc);
+    --bs-pagination-disabled-bg: var(--fundo-secao);
+    --bs-pagination-disabled-color: var(--cor-texto-suave);
 }
 
 /* ====== Fundo com marca d'água do IFSC ====== */
 body {
     background-color: var(--fundo-pagina);
+    color: var(--cor-texto);
     position: relative;
     overflow-x: hidden;
 }
@@ -41,30 +119,27 @@ body {
 body::before {
     content: "";
     position: absolute;
-    top: 80px; /* distância do topo */
-    left: 20px; /* distância da esquerda */
-    width: 245px; /* tamanho do logo */
+    top: 80px;
+    left: 20px;
+    width: 245px;
     height: 120px;
     background-image: url("../img/Logo_IFSC.png");
     background-repeat: no-repeat;
-    background-size: contain; /* mantém proporções do logo */
+    background-size: contain;
     background-position: top left;
     opacity: var(--opacidade-marca);
-    z-index: -1; /* mantém atrás de todo o conteúdo */
-    pointer-events: none; /* não interfere nos cliques */
+    z-index: -1;
+    pointer-events: none;
 }
 
-.main-content {
-    flex: 1;
+/* ====== Barra superior e rodapé ======
+   Escuros nos dois temas, mas com tom próprio: usando o mesmo cinza dos
+   cards, a navbar se fundia com o conteúdo no modo escuro. */
+.barra-topo,
+.rodape {
+    background-color: var(--fundo-chrome);
 }
 
-footer {
-    font-size: 0.9rem;
-}
-
-/* ====== Botão de alternar tema ======
-   Os dois ícones ficam no HTML e o CSS esconde o que não vale para o tema
-   atual: assim o ícone certo já aparece na primeira pintura, sem esperar JS. */
 #alternar-tema {
     background: none;
     border: 0;
@@ -72,15 +147,70 @@ footer {
     line-height: 1;
 }
 
-:root .icone-escuro,
-[data-bs-theme="light"] .icone-escuro {
+/* Os dois ícones ficam no HTML e o CSS esconde o que não vale para o tema
+   atual: assim o certo já aparece na primeira pintura, sem esperar o JS. */
+.icone-escuro {
     display: none;
 }
 
-[data-bs-theme="dark"] .icone-claro {
+:root[data-bs-theme="dark"] .icone-claro {
     display: none;
 }
 
-[data-bs-theme="dark"] .icone-escuro {
+:root[data-bs-theme="dark"] .icone-escuro {
     display: inline;
+}
+
+/* ====== Superfícies comuns ====== */
+.caixa-secao {
+    background-color: var(--fundo-secao);
+    border-radius: 15px;
+    box-shadow: var(--sombra-caixa);
+}
+
+.painel-interno {
+    background-color: var(--fundo-secao);
+    border: 1px solid var(--borda-suave);
+    border-radius: 10px;
+}
+
+/* Campos de formulário ficam no nível do cartão. O padrão do Bootstrap os
+   pinta com --bs-body-bg, o que os faria sumir dentro da caixa. */
+.form-control,
+.form-select {
+    background-color: var(--fundo-cartao);
+    border-color: var(--borda-suave);
+    color: var(--cor-texto);
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--fundo-cartao);
+    color: var(--cor-texto);
+}
+
+/* Aba ativa se funde com a seção embaixo dela. */
+.nav-tabs .nav-link.active {
+    background-color: var(--fundo-secao);
+    border-bottom-color: var(--fundo-secao);
+    color: var(--cor-titulo);
+}
+
+.nav-tabs .nav-link {
+    color: var(--cor-texto-suave);
+}
+
+/* Cabeçalho de modal no verde da instituição, não no verde padrão do
+   Bootstrap, que destoava do resto da interface. */
+.cabecalho-modal {
+    background-color: var(--verde-ifsc);
+    color: var(--sobre-verde);
+}
+
+.cabecalho-modal .btn-close {
+    filter: var(--filtro-fechar-modal);
+}
+
+footer {
+    font-size: 0.9rem;
 }

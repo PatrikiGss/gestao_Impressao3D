@@ -2,7 +2,7 @@
     max-width: 1000px;
     margin: 3rem auto;
     padding: 2rem;
-    background-color: var(--fundo-caixa);
+    background-color: var(--fundo-secao);
     border-radius: 15px;
     box-shadow: var(--sombra-caixa);
 }
@@ -12,12 +12,12 @@
     font-weight: 700;
 }
 
-/* Alinhar botão "Novo cadastro" */
+/* Alinhar botao "Novo cadastro" */
 .d-flex h1 {
     margin-bottom: 0;
 }
 
-/* Botões */
+/* Botoes */
 .btn-lista {
     min-width: 110px;
     padding: 0.35rem 0.75rem;
@@ -26,29 +26,28 @@
     transition: all 0.2s ease-in-out;
 }
 
-/* Hover genérico para feedback visual */
 .btn-lista:hover {
     transform: scale(1.03);
 }
 
-/* Botão Excluir - Vermelho */
+/* Botao Excluir - Vermelho */
 .btn-outline-danger {
     color: var(--vermelho);
     border-color: var(--vermelho);
 }
 .btn-outline-danger:hover {
-    color: #fff;
+    color: var(--sobre-verde);
     background-color: var(--vermelho);
     border-color: var(--vermelho);
 }
 
-/* Botão Detalhes - Verde IFSC */
+/* Botao Detalhes - Verde IFSC */
 .btn-outline-success {
     color: var(--verde-ifsc);
     border-color: var(--verde-ifsc);
 }
 .btn-outline-success:hover {
-    color: #fff;
+    color: var(--sobre-verde);
     background-color: var(--verde-ifsc);
     border-color: var(--verde-ifsc);
 }

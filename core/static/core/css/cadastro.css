@@ -1,12 +1,8 @@
-body {
-    background-color: var(--fundo-pagina);
-}
-
 .cadastro-box {
     max-width: 700px;
     margin: 3rem auto;
     padding: 2.5rem;
-    background-color: var(--fundo-caixa);
+    background-color: var(--fundo-cartao);
     border-radius: 15px;
     box-shadow: var(--sombra-caixa);
 }
@@ -17,7 +13,7 @@ body {
     text-align: center;
 }
 
-/* Botão NÃO - vermelho */
+/* Botao NAO - vermelho */
 .btn-outline-danger {
     color: var(--vermelho);
     border-color: var(--vermelho);
@@ -25,11 +21,11 @@ body {
 .btn-outline-danger:hover,
 .btn-outline-danger.active {
     background-color: var(--vermelho);
-    color: #fff;
+    color: var(--sobre-verde);
     border-color: var(--vermelho);
 }
 
-/* Botão SIM e ENVIAR - verde IFSC */
+/* Botao SIM e ENVIAR - verde IFSC */
 .btn-outline-success {
     color: var(--verde-ifsc);
     border-color: var(--verde-ifsc);
@@ -37,16 +33,12 @@ body {
 .btn-outline-success:hover,
 .btn-outline-success.active {
     background-color: var(--verde-ifsc);
-    color: #fff;
+    color: var(--sobre-verde);
     border-color: var(--verde-ifsc);
 }
 
-#campos-tecnicos {
-    background-color: var(--fundo-caixa-suave);
-    border-radius: 10px;
-}
-
 #campos-tecnicos h5 {
+    color: var(--cor-titulo);
     font-weight: 600;
     margin-bottom: 1rem;
 }

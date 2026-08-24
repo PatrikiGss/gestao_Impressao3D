@@ -32,3 +32,6 @@ db.sqlite3
 # Config do editor
 .vscode/
 .idea/
+
+# Documentação técnica interna: referência de trabalho, não entra no repo
+DOCUMENTACAO.md

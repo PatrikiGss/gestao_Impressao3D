@@ -1,9 +1,10 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% load estaticos %}
 {% block title %}Sucesso - Cadastro{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'core/css/sucesso.css' %}">
+<link rel="stylesheet" href="{% static_v 'core/css/sucesso.css' %}">
 {% endblock %}
 
 {% block content %}

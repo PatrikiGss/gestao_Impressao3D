@@ -5,18 +5,23 @@ ação destrutiva por GET, status arbitrário e validação que só existia no
 navegador.
 """
 
+import os
+import re
 import shutil
+from pathlib import Path
 import tempfile
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
 from .forms import TAMANHO_MAXIMO_MB, ModelsForm
+from .templatetags.estaticos import static_v
 from .models import HistoricoStatus, Models
 
 
@@ -749,11 +754,110 @@ class TemaEscuroTest(TestCase):
         self.assertIn(':root', css)
         self.assertIn('[data-bs-theme="dark"]', css)
 
-    def test_css_das_paginas_nao_tem_cor_fixa(self):
-        """Cor fixa em CSS de página não acompanha a troca de tema."""
-        paginas = ('core/css/lista.css', 'core/css/cadastro.css',
-                   'core/css/home.css', 'core/css/sucesso.css')
-        for arquivo in paginas:
-            css = open(finders.find(arquivo), encoding='utf-8').read()
-            for cor in ('whitesmoke', '#f8f9fa', '#343a40'):
-                self.assertNotIn(cor, css, f'{arquivo} ainda tem {cor} fixo')
+
+class UtilitariosDeCorTest(TestCase):
+    """Utilities de cor do Bootstrap que ignoram o tema.
+
+    bg-light e bg-dark têm cor fixa: no modo escuro o painel de campos
+    técnicos virava uma caixa quase branca com texto quase branco (contraste
+    1.24, ilegível). O certo é usar as classes próprias, ligadas aos tokens.
+    """
+
+    PROIBIDAS = ('bg-light', 'bg-dark', 'bg-white', 'navbar-dark', 'bg-body')
+
+    def templates(self):
+        raiz = Path(settings.BASE_DIR)
+        for app in ('core', 'autenticacao'):
+            yield from (raiz / app / 'templates').rglob('*.html')
+
+    def test_templates_nao_usam_utility_de_cor_fixa(self):
+        encontrados = []
+        for caminho in self.templates():
+            html = caminho.read_text(encoding='utf-8')
+            for classe in self.PROIBIDAS:
+                if classe in html:
+                    encontrados.append(f'{caminho.name}: {classe}')
+        self.assertEqual(encontrados, [], f'usar token de tema no lugar: {encontrados}')
+
+    def test_paleta_cobre_os_dois_temas(self):
+        css = Path(finders.find('core/css/base.css')).read_text(encoding='utf-8')
+        claro = css.split(':root {')[1].split('}')[0]
+        escuro = css.split(':root[data-bs-theme="dark"] {')[1].split('}')[0]
+
+        tokens = lambda bloco: {l.split(':')[0].strip() for l in bloco.splitlines()
+                                if l.strip().startswith('--')}
+        faltando = tokens(claro) - tokens(escuro)
+        self.assertEqual(faltando, set(), f'tokens sem versão escura: {faltando}')
+
+    def test_escala_de_superficies_e_distinta(self):
+        """Página, seção e cartão precisam ser cores diferentes, senão o card
+        some dentro da caixa — foi o que aconteceu no primeiro modo escuro."""
+        css = Path(finders.find('core/css/base.css')).read_text(encoding='utf-8')
+        for bloco_nome in (':root {', ':root[data-bs-theme="dark"] {'):
+            bloco = css.split(bloco_nome)[1].split('}')[0]
+            valores = {}
+            for nome in ('--fundo-pagina', '--fundo-secao', '--fundo-cartao'):
+                for linha in bloco.splitlines():
+                    if linha.strip().startswith(nome + ':'):
+                        valores[nome] = linha.split(':')[1].strip().rstrip(';')
+            self.assertEqual(len(set(valores.values())), 3,
+                             f'{bloco_nome} tem superfícies repetidas: {valores}')
+
+
+class EstaticosVersionadosTest(TestCase):
+    """CSS e JS precisam carregar com marca de versão.
+
+    Sem ela o navegador serve o arquivo antigo depois de uma alteração: o HTML
+    vem fresco do Django e a página mistura template novo com estilo velho.
+    Foi assim que o cabeçalho ficou sem cor de fundo depois de trocar bg-dark
+    pela classe .barra-topo.
+    """
+
+    def setUp(self):
+        self.usuario = get_user_model().objects.create_user('admin', password='senha-de-teste')
+
+    def test_tag_acrescenta_versao(self):
+        url = static_v('core/css/base.css')
+        self.assertIn('/static/core/css/base.css', url)
+        self.assertRegex(url, r'\?v=\d+$')
+
+    @override_settings(DEBUG=True)
+    def test_versao_acompanha_a_alteracao_do_arquivo(self):
+        """Só vale em desenvolvimento: com DEBUG=False a versão fica em cache
+        de propósito, porque os arquivos não mudam com o processo no ar."""
+        caminho = Path(finders.find('core/css/base.css'))
+        antes = static_v('core/css/base.css')
+
+        original = caminho.stat().st_mtime
+        try:
+            os.utime(caminho, (original + 120, original + 120))
+            depois = static_v('core/css/base.css')
+        finally:
+            os.utime(caminho, (original, original))
+
+        self.assertNotEqual(antes, depois, 'a URL tem de mudar quando o arquivo muda')
+
+    def test_arquivo_inexistente_nao_quebra(self):
+        self.assertNotIn('?v=', static_v('core/css/nao-existe.css'))
+
+    def test_paginas_publicas_servem_css_versionado(self):
+        for rota in ('core:home', 'core:cadastro', 'core:sucesso', 'autenticacao:login'):
+            resposta = self.client.get(reverse(rota))
+            self.assertContains(resposta, 'core/css/base.css?v=', msg_prefix=rota)
+
+    def test_lista_serve_css_e_js_versionados(self):
+        self.client.force_login(self.usuario)
+        resposta = self.client.get(reverse('core:lista_models'))
+        for estatico in ('core/css/base.css?v=', 'core/css/lista.css?v=',
+                         'core/js/tema.js?v=', 'core/js/lista.js?v='):
+            self.assertContains(resposta, estatico)
+
+    def test_nenhum_template_usa_static_sem_versao_para_css_ou_js(self):
+        raiz = Path(settings.BASE_DIR)
+        pendentes = []
+        for app in ('core', 'autenticacao'):
+            for caminho in (raiz / app / 'templates').rglob('*.html'):
+                html = caminho.read_text(encoding='utf-8')
+                for achado in re.findall(r'\{%\s*static\s+\'[^\']+\.(?:css|js)\'', html):
+                    pendentes.append(f'{caminho.name}: {achado}')
+        self.assertEqual(pendentes, [], f'usar static_v nestes casos: {pendentes}')

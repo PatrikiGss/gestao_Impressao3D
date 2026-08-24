@@ -2,7 +2,7 @@
     max-width: 600px;
     margin: 5rem auto;
     padding: 3rem;
-    background-color: var(--fundo-caixa);
+    background-color: var(--fundo-cartao);
     border-radius: 15px;
     box-shadow: var(--sombra-caixa);
 }
@@ -19,7 +19,7 @@
     font-size: 0.95rem;
 }
 
-/* Número do pedido: é o que o solicitante precisa anotar, então tem que
+/* Numero do pedido: e o que o solicitante precisa anotar, entao tem que
    saltar aos olhos. */
 .numero-pedido {
     font-size: 2.75rem;

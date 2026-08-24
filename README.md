@@ -1,5 +1,3 @@
-Sim. Eu ajustaria o README para ficar mais profissional e consistente, principalmente removendo algumas repetições, melhorando a estrutura e deixando explícita a questão importante dos arquivos no Render. Também corrigi a badge do GitHub, que está com a quebra do link separada.
-
 # Gestão de Impressoras 3D — IFSC Campus Lages
 
 [![Testes](https://github.com/PatrikiGss/gestao_Impressao3D/actions/workflows/testes.yml/badge.svg)](https://github.com/PatrikiGss/gestao_Impressao3D/actions/workflows/testes.yml)

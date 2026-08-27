@@ -14,3 +14,9 @@ python manage.py collectstatic --no-input
 # Aplica migrations pendentes. É idempotente: se não houver nada novo, não faz
 # nada.
 python manage.py migrate
+
+# Cria o primeiro administrador a partir de ADMIN_USERNAME e ADMIN_PASSWORD.
+# O plano gratuito do Render não dá acesso a shell, então esta é a única forma
+# de criar o superusuário. Não faz nada se ele já existir ou se as variáveis
+# não estiverem definidas.
+python manage.py criar_admin

@@ -7,6 +7,7 @@ navegador.
 
 import os
 import re
+from io import StringIO
 from unittest import mock
 import shutil
 from pathlib import Path
@@ -17,6 +18,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
 from django.contrib.staticfiles import finders
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -943,3 +945,130 @@ class ConfiguracaoDeDeployTest(TestCase):
         reqs = (self.raiz() / 'requirements.txt').read_text(encoding='utf-8')
         for pacote in ('gunicorn', 'whitenoise', 'dj-database-url', 'psycopg2-binary'):
             self.assertIn(pacote, reqs)
+
+
+class HeaderResponsivoTest(TestCase):
+    """O navbar-expand do Bootstrap exige um toggler e um .collapse.
+
+    Sem eles os itens não se recolhem no celular: ficavam soltos, e a marca
+    centralizada por position-absolute passava por cima dos menus.
+    """
+
+    def html(self):
+        return self.client.get(reverse('core:home')).content.decode()
+
+    def test_navbar_tem_toggler_e_area_colapsavel(self):
+        html = self.html()
+        self.assertIn('navbar-toggler', html)
+        self.assertIn('data-bs-target="#menu-principal"', html)
+        self.assertIn('id="menu-principal"', html)
+        self.assertIn('collapse navbar-collapse', html)
+
+    def test_toggler_e_a_area_colapsavel_estao_ligados(self):
+        html = self.html()
+        self.assertIn('aria-controls="menu-principal"', html)
+        self.assertIn('aria-expanded="false"', html)
+        self.assertIn('aria-label="Abrir o menu de navegação"', html)
+
+    def test_marca_nao_usa_posicionamento_absoluto_no_html(self):
+        """Centralizar a marca é responsabilidade do CSS, a partir de 1200px.
+        Fixo no HTML, ela atropelava os menus em toda largura."""
+        html = self.html()
+        self.assertNotIn('position-absolute start-50', html)
+
+    def test_botao_de_tema_fica_fora_do_menu_colapsavel(self):
+        """Trocar o tema não deve exigir abrir o menu no celular."""
+        html = self.html()
+        antes_do_menu = html.split('id="menu-principal"')[0]
+        self.assertIn('id="alternar-tema"', antes_do_menu)
+
+    def test_viewport_declarado(self):
+        self.assertIn('name="viewport"', self.html())
+
+
+class MarcaDaguaTest(TestCase):
+    """O logo original tem o texto em preto e some no fundo escuro."""
+
+    def logo(self, arquivo):
+        return Path(finders.find(f'core/img/{arquivo}'))
+
+    def test_existe_variante_para_o_tema_escuro(self):
+        self.assertTrue(self.logo('Logo_IFSC_escuro.png').exists())
+
+    def test_css_troca_o_logo_conforme_o_tema(self):
+        css = Path(finders.find('core/css/base.css')).read_text(encoding='utf-8')
+        claro = css.split(':root {')[1].split('}')[0]
+        escuro = css.split(':root[data-bs-theme="dark"] {')[1].split('}')[0]
+        self.assertIn('Logo_IFSC.png', claro)
+        self.assertIn('Logo_IFSC_escuro.png', escuro)
+
+    def test_texto_da_variante_e_mais_claro_que_o_do_original(self):
+        from PIL import Image
+
+        def media_do_texto(caminho):
+            img = Image.open(caminho).convert('RGBA')
+            largura, altura = img.size
+            px = img.load()
+            total, n = 0, 0
+            # metade direita: onde fica o texto, sem os quadrados verdes
+            for x in range(int(largura * 0.30), largura):
+                for y in range(altura):
+                    r, g, b, a = px[x, y]
+                    if a < 200:
+                        continue
+                    total += (r + g + b) / 3
+                    n += 1
+            return total / n if n else 0
+
+        original = media_do_texto(self.logo('Logo_IFSC.png'))
+        variante = media_do_texto(self.logo('Logo_IFSC_escuro.png'))
+        self.assertGreater(variante, original * 3,
+                           'a variante escura precisa ser bem mais clara que o original')
+
+
+class CriarAdminTest(TestCase):
+    """Sem shell no plano gratuito do Render, o superusuário nasce daqui."""
+
+    def rodar(self, **ambiente):
+        saida = StringIO()
+        with mock.patch.dict(os.environ, ambiente, clear=False):
+            for chave in ('ADMIN_USERNAME', 'ADMIN_PASSWORD', 'ADMIN_EMAIL'):
+                if chave not in ambiente:
+                    os.environ.pop(chave, None)
+            call_command('criar_admin', stdout=saida)
+        return saida.getvalue()
+
+    def test_cria_o_superusuario(self):
+        self.rodar(ADMIN_USERNAME='chefe', ADMIN_PASSWORD='senha-forte-123',
+                   ADMIN_EMAIL='chefe@ifsc.edu.br')
+
+        usuario = get_user_model().objects.get(username='chefe')
+        self.assertTrue(usuario.is_superuser)
+        self.assertTrue(usuario.is_staff)
+        self.assertTrue(usuario.check_password('senha-forte-123'))
+        self.assertEqual(usuario.email, 'chefe@ifsc.edu.br')
+
+    def test_rodar_de_novo_nao_falha_nem_duplica(self):
+        """O build roda a cada deploy: precisa ser idempotente."""
+        ambiente = {'ADMIN_USERNAME': 'chefe', 'ADMIN_PASSWORD': 'senha-forte-123'}
+        self.rodar(**ambiente)
+        saida = self.rodar(**ambiente)
+
+        self.assertEqual(get_user_model().objects.filter(username='chefe').count(), 1)
+        self.assertIn('já existe', saida)
+
+    def test_nao_troca_a_senha_de_quem_ja_existe(self):
+        get_user_model().objects.create_superuser('chefe', '', 'senha-original')
+        self.rodar(ADMIN_USERNAME='chefe', ADMIN_PASSWORD='outra-senha')
+
+        usuario = get_user_model().objects.get(username='chefe')
+        self.assertTrue(usuario.check_password('senha-original'))
+
+    def test_sem_variaveis_nao_faz_nada(self):
+        saida = self.rodar()
+        self.assertEqual(get_user_model().objects.count(), 0)
+        self.assertIn('não definidas', saida)
+
+    def test_build_sh_chama_o_comando(self):
+        script = (Path(settings.BASE_DIR) / 'build.sh').read_text(encoding='utf-8')
+        self.assertIn('manage.py criar_admin', script)

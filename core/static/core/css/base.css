@@ -31,6 +31,7 @@
     --sobre-verde: #ffffff;           /* texto legível sobre o verde */
     --vermelho: #dc3545;
 
+    --marca-dagua: url("../img/Logo_IFSC.png");
     --opacidade-marca: 0.9;
     --filtro-fechar-modal: invert(1) grayscale(100%) brightness(200%);
 }
@@ -54,7 +55,11 @@
     --sobre-verde: #10241a;
     --vermelho: #ea868f;
 
-    --opacidade-marca: 0.25;
+    /* O logo original tem o texto em preto: sobre fundo escuro ele some e
+       sobram só os quadrados verdes. Esta variante tem o texto em cinza
+       claro, com o verde e o vermelho da marca preservados. */
+    --marca-dagua: url("../img/Logo_IFSC_escuro.png");
+    --opacidade-marca: 0.3;
     --filtro-fechar-modal: none;
 }
 
@@ -123,13 +128,25 @@ body::before {
     left: 20px;
     width: 245px;
     height: 120px;
-    background-image: url("../img/Logo_IFSC.png");
+    background-image: var(--marca-dagua);
     background-repeat: no-repeat;
     background-size: contain;
     background-position: top left;
     opacity: var(--opacidade-marca);
     z-index: -1;
     pointer-events: none;
+}
+
+/* No celular a marca d'água fica quase toda escondida atrás do conteúdo e o
+   pedaço que sobra polui a lateral. Menor e mais discreta. */
+@media (max-width: 767.98px) {
+    body::before {
+        top: 64px;
+        left: 12px;
+        width: 150px;
+        height: 74px;
+        opacity: calc(var(--opacidade-marca) * 0.6);
+    }
 }
 
 /* ====== Barra superior e rodapé ======
@@ -140,11 +157,54 @@ body::before {
     background-color: var(--fundo-chrome);
 }
 
+/* Marca: duas linhas no celular também, mas em corpo menor para não empurrar
+   o toggler para fora da barra. */
+.marca-topo {
+    font-size: 1rem;
+    line-height: 1.25;
+    white-space: normal;
+}
+
+.marca-topo .d-block {
+    font-size: 0.8em;
+    opacity: 0.85;
+}
+
+/* No desktop a marca volta ao centro, como no desenho original. É posição
+   absoluta, então sai do fluxo e não empurra os menus — foi justamente isso
+   que atropelava tudo no celular.
+   Só a partir de 1200px: a 992px a marca centralizada ainda passa por cima
+   dos links, e por isso a navbar também colapsa em xl, não em lg. */
+@media (min-width: 1200px) {
+    .barra-topo > .container-fluid {
+        position: relative;
+    }
+
+    .marca-topo {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 0;
+        font-size: 1.15rem;
+        text-align: center;
+    }
+}
+
 #alternar-tema {
     background: none;
     border: 0;
+    padding: 0.25rem 0.5rem;
+    font-size: 1.15rem;
     cursor: pointer;
     line-height: 1;
+}
+
+/* No desktop o botão de tema volta para a ponta direita, depois dos links. */
+@media (min-width: 1200px) {
+    #alternar-tema {
+        margin-left: 0.5rem !important;
+        margin-right: 0 !important;
+    }
 }
 
 /* Os dois ícones ficam no HTML e o CSS esconde o que não vale para o tema
